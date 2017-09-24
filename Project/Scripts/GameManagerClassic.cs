@@ -368,6 +368,7 @@ public class GameManagerClassic : MonoBehaviour {
     public float pauseW, placeW, customW, toolsW;
     public float gpanH, placeBoxHW;
     public float pauseMenuW, pauseMenuH;
+    public float SaveSlotsSpaceH;
     public float TickCrossAreaSelect;
     const int patMenuNum = 4;
     const int pauseRowsNum = 4;
@@ -378,6 +379,8 @@ public class GameManagerClassic : MonoBehaviour {
     private  int rPlaceBoxHW;
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
+
+    private int rSlotH;
 
     void CalculateGUI()
     {
@@ -427,26 +430,19 @@ public class GameManagerClassic : MonoBehaviour {
         heightSt += rPauseMenuElemH + blackind;
         exitR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
 
-        //int slotHeight = (int) (400 / (saveSlotsNum + 1));
-        /*SLMenuRect = new Rect(Screen.width / 4, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, rGpanH * saveSlotsNum + blackind * (saveSlotsNum + 1));
-        SLBackRect = new Rect(Screen.width / 4, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rGpanH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind * 2);
-        SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rGpanH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
-        SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rGpanH);
-        SLAsureQBox = new Rect(Screen.width / 2, SLMenuRect.y + (SLMenuRect.height - continueR.height - continueR.width/2 - blackind * 4 - rGpanH), continueR.width + blackind * 2, continueR.height + blackind * 2);
-        SLAsureQ = new Rect(SLAsureQBox.x + blackind, SLAsureQBox.y + blackind, SLAsureQBox.width - blackind * 2, SLAsureQBox.height - blackind * 2);
-        SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rGpanH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
-        SLConf = new Rect(SLConfBox.x + blackind, SLConfBox.y + blackind, SLConfBox.width - blackind * 2, SLConfBox.height - blackind * 2);*/
+        int SLSlotsHeight = (int) (Screen.height*SaveSlotsSpaceH);
+        rSlotH = (int)(SLSlotsHeight / saveSlotsNum);
 
-        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, rGpanH * saveSlotsNum + blackind * (saveSlotsNum + 1));
-        SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rGpanH);
+        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * saveSlotsNum);
+        SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rSlotH);
 
-        SLBackRect = new Rect(Screen.width / 4, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rGpanH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind * 2);
-        SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rGpanH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rGpanH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
+        SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
+        SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rSlotH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rSlotH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
 
-        SLAsureQBox = new Rect(Screen.width / 2, SLMenuRect.y + (SLMenuRect.height - continueR.height - continueR.width / 2 - blackind * 4 - rGpanH), continueR.width + blackind * 2, continueR.height + blackind * 2);
+        SLAsureQBox = new Rect(Screen.width / 2, SLMenuRect.y + (SLMenuRect.height - continueR.height - continueR.width / 2 - blackind * 4 - rSlotH), continueR.width + blackind * 2, continueR.height + blackind * 2);
         SLAsureQ = new Rect(SLAsureQBox.x + blackind, SLAsureQBox.y + blackind, SLAsureQBox.width - blackind * 2, SLAsureQBox.height - blackind * 2);
 
-        SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rGpanH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
+        SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rSlotH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
         SLConf = new Rect(SLConfBox.x + blackind, SLConfBox.y + blackind, SLConfBox.width - blackind * 2, SLConfBox.height - blackind * 2);
     }
 
@@ -639,7 +635,7 @@ public class GameManagerClassic : MonoBehaviour {
                     string cont = " Empty";
                     if (Loader.GetSizeAt(i).first != 0)
                         cont = "Save " + i + ": " + Loader.GetSizeAt(i).first + "x" + Loader.GetSizeAt(i).second;
-                    if (GUI.Button(new Rect(SLSlotRect.x,SLSlotRect.y + (rGpanH+blackind)*(i-1),SLSlotRect.width,SLSlotRect.height),cont, MainSkin.customStyles[1]))
+                    if (GUI.Button(new Rect(SLSlotRect.x,SLSlotRect.y + (rSlotH + blackind)*(i-1),SLSlotRect.width,SLSlotRect.height),cont, MainSkin.customStyles[1]))
                     {
                         asureSL = true;
                         chosedSaveSlot = i;
