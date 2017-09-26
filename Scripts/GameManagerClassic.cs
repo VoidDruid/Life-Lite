@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 public class GameManagerClassic : MonoBehaviour {
 
@@ -21,6 +22,7 @@ public class GameManagerClassic : MonoBehaviour {
     public TextAsset periPatterns;
     public TextAsset genPatterns;
     public TextAsset statPatterns;
+    public TextAsset customPatterns;
 
     class Pattern
     {
@@ -240,9 +242,11 @@ public class GameManagerClassic : MonoBehaviour {
             return area;
         }
 
-        public Structers.Pair<int, int> GetAreaSize()
+        public Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>> GetAreaCorners()
         {
-            return new Structers.Pair<int, int>((int)Mathf.Abs(corn1.x - corn2.x), (int)Mathf.Abs(corn1.z - corn2.z));
+            if (corn1.x > corn2.x) Methods.Swap(ref corn1.x, ref corn2.x);
+            if (corn1.z > corn2.z) Methods.Swap(ref corn1.z, ref corn2.z);
+            return new Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>>(new Structers.Pair<int, int>((int)corn1.x,(int)corn1.z), new Structers.Pair<int, int>((int)corn2.x, (int)corn2.z));
         }
         public void Reset()
         {
@@ -272,6 +276,57 @@ public class GameManagerClassic : MonoBehaviour {
         CameraPos.x = gamefield.GetSize().first / 2 - 0.5f;
         CameraPos.z = gamefield.GetSize().second / 2 - 0.5f;
         this.transform.position = CameraPos;
+    }
+    void LoadCustoms()
+    {
+        Debug.Log("customs: ");
+        string patConts = customPatterns.text;
+        for (int i = 0; i < patConts.Length; i++)
+        {
+            if (patConts[i] == '.' && i < patConts.Length - 1)
+            {
+                i++;
+                Pattern pat = new Pattern();
+                string name = "";
+                while (patConts[i] != ':' && i < patConts.Length)
+                {
+                    name += patConts[i];
+                    i++;
+                }
+                pat.name = name;
+                List<bool> row = new List<bool>();
+                while (patConts[i] != ';' && i < patConts.Length)
+                {
+                    if (patConts[i] == '0')
+                    {
+                        row.Add(false);
+                    }
+                    if (patConts[i] == '1')
+                    {
+                        row.Add(true);
+                    }
+                    if (patConts[i] == '_')
+                    {
+                        pat.def.Add(row);
+                        row = new List<bool>();
+                    }
+                    i++;
+                }
+                custPat.Add(pat);
+            }
+        }
+        for (int i = 0; i < custPat.Count; i++)
+        {
+            Debug.Log(custPat[i].name);
+            string row = "";
+            for (int a = 0; a < custPat[i].def.Count; a++)
+            {
+                for (int b = 0; b < custPat[i].def[a].Count; b++)
+                    row += custPat[i].def[a][b];
+                Debug.Log(row);
+                row = "";
+            }
+        }
     }
 
     List<List<Pattern>> Patterns = new List<List<Pattern>>();
@@ -335,7 +390,7 @@ public class GameManagerClassic : MonoBehaviour {
                 }
             }*/
         }
-
+        LoadCustoms();
         ResetCamera();
         CalculateGUI();
     }
@@ -536,6 +591,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool placing = false;
     bool slmenu = false, asureSL = false;
     bool optionsmenu = false;
+    bool savePattern = false;
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -557,7 +613,13 @@ public class GameManagerClassic : MonoBehaviour {
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
             {
-                ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
+                if (!savePattern)
+                    ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
+                else
+                {
+                    SavePattern(AreaSelecter.GetInstance().GetAreaCorners());
+                    savePattern = true;
+                }
                 AreaSelecter.GetInstance().Reset();
                 paused = selectArea = false;
                 gpan = true;
@@ -583,13 +645,15 @@ public class GameManagerClassic : MonoBehaviour {
                 placeMenu = !placeMenu;
                 placePatTMenu = toolsMenu = false;
             }
-            GUI.Button(customR, customC, MainSkin.customStyles[1]);
+            if (GUI.Button(customR, customC, MainSkin.customStyles[1]))
+            {
+                //TODO
+            }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
                 paused = !paused;
                 toolsMenu = !toolsMenu;
                 placePatTMenu = placeMenu = false;
-                //TODO
             }
         }
         if (pauseMenu)
@@ -665,7 +729,6 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (placeMenu)
         {
-            //TODO GUI.viewRect
             GUI.Box(new Rect(rPauseW + blackind, rGpanH + blackind, rPlaceW + blackind * 2, (rGpanH + blackind) * 4), "", MainSkin.customStyles[0]);
             if (GUI.Button(movPatR, movPatC, MainSkin.customStyles[1]))
             {
@@ -695,7 +758,6 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rPlaceBoxHW, Patterns[(int)placePatTNum].Count * rPlaceBoxHW));
                 for (int i = 0; i < Patterns[(int)placePatTNum].Count; i++)
-                    //if(GUI.Button(new Rect(rPauseW + rPlaceW + blackind * 3, rGpanH + blackind + rPlaceBoxHW*i, rPlaceBoxHW,rPlaceBoxHW), Patterns[(int)placePatTNum][i].name))
                     if (GUI.Button(new Rect(0, rPlaceBoxHW * i, rPlaceBoxHW, rPlaceBoxHW), Patterns[(int)placePatTNum][i].name))
                     {
                         placePatTMenu = placeMenu = false;
@@ -741,7 +803,7 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                //TODO
+                savePattern = true;
             }
         }
     }
@@ -767,9 +829,37 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
-    List<Pattern> customPatterns = new List<Pattern>();
-    void SavePattern(List<Structers.Pair<int, int>> area, Structers.Pair<int,int> size)
+    List<Pattern> custPat = new List<Pattern>();
+    void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
-        //TODO
+        string path = "Assets/Texts/customPatterns.txt";
+        StreamWriter writer = new StreamWriter(path, true);
+        Structers.Pair<int, int> corn1 = coord.first;
+        Structers.Pair<int, int> corn2 = coord.second;
+        string name = "custom" + custPat.Count;
+        Pattern custom = new Pattern();
+        custom.name = name;
+        writer.Write("." + name + ":" + writer.NewLine);
+        List<List<bool>> pat = new List<List<bool>>();
+        List<bool> row = new List<bool>();
+        for (int i = corn1.first-1; i <= corn2.first; i++)
+        {
+            for (int j = corn1.second; j <= corn2.second; j++)
+            {
+                row.Add(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? true : false);
+                writer.Write(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? '1' : '0');
+            }
+            writer.Write('_' + writer.NewLine);
+            row = new List<bool>();
+            pat.Add(row);
+        }
+        writer.Write(';' + writer.NewLine);
+        writer.Close();
+        Debug.Log("saved");
+        custom.def = pat;
+        custPat.Add(custom);
+        savePattern = false;
+        /*DEBUG*/InstPatt.GetInstance().Place(custPat[custPat.Count-1], this.transform.position, 0);
+        placing = true;
     }
 }
