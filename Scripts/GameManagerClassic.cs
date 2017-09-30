@@ -862,4 +862,5 @@ public class GameManagerClassic : MonoBehaviour {
         /*DEBUG*/InstPatt.GetInstance().Place(custPat[custPat.Count-1], this.transform.position, 0);
         placing = true;
     }
+    //git coomit from atom
 }
