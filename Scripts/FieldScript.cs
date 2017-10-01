@@ -328,7 +328,14 @@ public class FieldScript : MonoBehaviour
     public bool mouseRestr = false;
     public void PCalculations()
     {
-        
+        foreach (var r in scrRestraints)
+        {
+            if (!r.Contains(new Vector2(Input.mousePosition.x, Input.mousePosition.y)))
+            {
+                mouseRestr = true;
+                break;
+            }
+        }      
         //TODO
         if (!turning && !wassaving && !wasloading)
         {

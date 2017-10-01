@@ -244,11 +244,17 @@ public class GameManagerClassic : MonoBehaviour {
             return area;
         }
 
+        //FIXME
+        //баг если вызывать постоянно в OnGUI()
         public Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>> GetAreaCorners()
         {
-            if (corn1.x > corn2.x) Methods.Swap(ref corn1.x, ref corn2.x);
-            if (corn1.z > corn2.z) Methods.Swap(ref corn1.z, ref corn2.z);
-            return new Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>>(new Structers.Pair<int, int>((int)corn1.x,(int)corn1.z), new Structers.Pair<int, int>((int)corn2.x, (int)corn2.z));
+            var temp1 = corn1;
+            var temp2 = corn2;
+            if (temp1.x > temp2.x) Methods.Swap(ref temp1.x, ref temp2.x);
+            if (temp1.z > temp2.z) Methods.Swap(ref temp1.z, ref temp2.z);
+            Debug.Log("corn1: " + (int)temp1.x + "," + (int)temp1.z);
+            Debug.Log("corn2: " + (int)temp2.x + "," + (int)temp2.z);
+            return new Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>>(new Structers.Pair<int, int>((int)temp1.x,(int)temp1.z), new Structers.Pair<int, int>((int)temp2.x, (int)temp2.z));
         }
         public void Reset()
         {
@@ -267,7 +273,6 @@ public class GameManagerClassic : MonoBehaviour {
         cam = gamefield.cam;
         gamefield.CreateEmptyField();
         gamefield.SetTurnSpeed(TurnTm);
-        gamefield.rGpanH = rGpanH;
         ResetCamera();
     }
 
@@ -317,7 +322,8 @@ public class GameManagerClassic : MonoBehaviour {
                 custPat.Add(pat);
             }
         }
-        for (int i = 0; i < custPat.Count; i++)
+        //DEBUG
+        /*for (int i = 0; i < custPat.Count; i++)
         {
             Debug.Log(custPat[i].name);
             string row = "";
@@ -328,12 +334,19 @@ public class GameManagerClassic : MonoBehaviour {
                 Debug.Log(row);
                 row = "";
             }
-        }
+        }*/
     }
 
     List<List<Pattern>> Patterns = new List<List<Pattern>>();
     void Start()
     {
+        outlineRot.eulerAngles = new Vector3(90, 0, 0);
+        outlines = new List<GameObject>();
+        for (int i = 0; i<4;i++)
+        {
+            outlines.Add(Instantiate(areaOutline, Vector3.zero, outlineRot) as GameObject);
+            outlines[i].SetActive(false);
+        }
         List<string> patConts = new List<string>();
         patConts.Add(movPatterns.text);
         patConts.Add(periPatterns.text);
@@ -438,10 +451,11 @@ public class GameManagerClassic : MonoBehaviour {
     private int rSaveLoadW;
 
     private int rSlotH;
-
+    Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
     void CalculateGUI()
     {
         rGpanH = Mathf.RoundToInt(Screen.height * gpanH) - blackind;
+        gamefield.rGpanH = rGpanH;
         rPauseW = Mathf.RoundToInt(Screen.width * pauseW) - blackind * 2;
         rPlaceW = Mathf.RoundToInt(Screen.width * placeW) - blackind;
         rCustomW = Mathf.RoundToInt(Screen.width * customW) - blackind;
@@ -476,6 +490,7 @@ public class GameManagerClassic : MonoBehaviour {
         pauseMenuTop = Mathf.RoundToInt((Screen.height - rPauseMenuH) / 2);
         pauseMenuLeft = Mathf.RoundToInt((Screen.width - rPauseMenuW) / 2);
         pauseMenuR = new Rect(pauseMenuLeft - blackind, pauseMenuTop - blackind, rPauseMenuW + blackind * 2, rPauseMenuH + blackind * pauseRowsNum);
+        restraints.Add("pauseMenu", pauseMenuR);
         int heightSt = pauseMenuTop;
         continueR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
         heightSt += rPauseMenuElemH + blackind;
@@ -492,17 +507,22 @@ public class GameManagerClassic : MonoBehaviour {
 
         SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * saveSlotsNum);
         SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rSlotH);
+        restraints.Add("slMenu", SLMenuRect);
 
         SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
         SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rSlotH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rSlotH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
+        restraints.Add("slBack", SLBackRect);
 
         SLAsureQBox = new Rect(Screen.width / 2, SLMenuRect.y + (SLMenuRect.height - continueR.height - continueR.width / 2 - blackind * 4 - rSlotH), continueR.width + blackind * 2, continueR.height + blackind * 2);
         SLAsureQ = new Rect(SLAsureQBox.x + blackind, SLAsureQBox.y + blackind, SLAsureQBox.width - blackind * 2, SLAsureQBox.height - blackind * 2);
+        restraints.Add("slAsure", SLAsureQBox);
 
         SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rSlotH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
         SLConf = new Rect(SLConfBox.x + blackind, SLConfBox.y + blackind, SLConfBox.width - blackind * 2, SLConfBox.height - blackind * 2);
+        restraints.Add("slConf", SLConfBox);
     }
 
+    bool updated = false;
     GameObject pressedGo;
     bool getoffset = false;
     bool mousemoved = false;
@@ -574,12 +594,18 @@ public class GameManagerClassic : MonoBehaviour {
                 }
             }
         }
+
         if (selectArea)
         {
             gamefield.mouseRestr = true;
             AreaSelecter.GetInstance().SetArea();
         }
         gamefield.PCalculations();
+        updated = true;
+    }
+    void LateUpdate()
+    {
+        updated = false;
     }
 
     //а ну ка, опробуем делегаты
@@ -606,25 +632,34 @@ public class GameManagerClassic : MonoBehaviour {
     }
     SaveLoad checkSL;
     int chosedSaveSlot = 1;
+    List<GameObject> outlines;
+    void ChangeStateOutlines()
+    {
+        foreach (var ln in outlines)
+            ln.SetActive(!ln.activeInHierarchy);
+    }
+    Quaternion outlineRot;
     //TODO: автоматизировать убирание/появление gpan, паузу и пр.
     void OnGUI()
     {
+
         if (selectArea)
         {
             Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
-            /*Structers.Pair<int, int> corn1 = AreaSelecter.GetInstance().GetAreaCorners().first;
-            Structers.Pair<int, int> corn2 = AreaSelecter.GetInstance().GetAreaCorners().second;
-            List<GameObject> outlines = new List<GameObject>();
+            /*Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>> temp = AreaSelecter.GetInstance().GetAreaCorners();
+            Structers.Pair<int, int> corn1 = temp.first;
+            Structers.Pair<int, int> corn2 = temp.second;
             float xlengH = (corn2.first - corn1.first)/2;
             float zlengH = (corn2.second- corn1.second) / 2;
-            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first + xleng, outlineHeight, corn1.second - 0.5f * outlineScale), Quaternion.identity) as GameObject);
-            outlines[0].transform.localScale = new Vector3(xlengH * 2, 1, outlineScale);
-            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first + xleng, outlineHeight, corn2.second + 0.5f * outlineScale), Quaternion.identity) as GameObject);
-            outlines[1].transform.localScale = new Vector3(xlengH * 2, 1, outlineScale);
-            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first - 0.5f * outlineScale, outlineHeight, corn1.second + zlengH ), Quaternion.identity) as GameObject);
-            outlines[2].transform.localScale = new Vector3(outlineScale, 1, zlengH*2);
-            outlines.Add(Instantiate(areaOutline, new Vector3(corn2.first + 0.5f * outlineScale, outlineHeight, corn1.second + zlengH), Quaternion.identity) as GameObject);
-            outlines[3].transform.localScale = new Vector3(outlineScale, 1, zlengH * 2);*/
+            outlines[0].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn1.second - 0.5f * outlineScale);
+            outlines[0].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
+            outlines[1].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn2.second + 0.5f * outlineScale);
+            outlines[1].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
+            outlines[2].transform.position = new Vector3(corn1.first - 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
+            outlines[2].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);
+            outlines[3].transform.position = new Vector3(corn2.first + 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
+            outlines[3].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);*/
+
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
             {
@@ -637,11 +672,14 @@ public class GameManagerClassic : MonoBehaviour {
                 }
                 AreaSelecter.GetInstance().Reset();
                 paused = selectArea = false;
+                gamefield.mouseRestr = false;
+                ChangeStateOutlines();
                 gpan = true;
             }
             if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
             {
                 AreaSelecter.GetInstance().Reset();
+                gamefield.mouseRestr = false;
                 paused = selectArea = false;
                 gpan = true;
             }
@@ -651,6 +689,7 @@ public class GameManagerClassic : MonoBehaviour {
             GUI.Box(new Rect(0, 0, Screen.width, rGpanH + blackind), "", MainSkin.customStyles[0]);
             if (GUI.Button(pauseR, pauseC, MainSkin.customStyles[1]))
             {
+                gamefield.scrRestraints.Add(restraints["pauseMenu"]);
                 paused = pauseMenu = true;
                 placeMenu = placePatTMenu = toolsMenu = false;
             }
@@ -677,11 +716,34 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 GUI.Box(pauseMenuR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(continueR, continueC, MainSkin.customStyles[1]))
+                {
+                    //FIXME
+                    //УЖАСНЫЙ КОСТЫЛЬ!
+                    pressedGo = gamefield.GetPressedGO();
+                    if (pressedGo != null)
+                    {
+                        int pgoX, pgoZ;
+                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                        gamefield.FlipCell(pgoX, pgoZ);
+                    }
+                    //конец костыля
+                    gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
-                GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]);
+                }
+                //TODOs
+                if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))
+                {
+                    gamefield.scrRestraints.Clear();
+                    paused = pauseMenu = false;
+                }
 
                 if (GUI.Button(saveR, saveC, MainSkin.customStyles[1]))
                 {
+                    gamefield.scrRestraints.Add(restraints["slMenu"]);
+                    gamefield.scrRestraints.Add(restraints["slBack"]);
+                    gamefield.scrRestraints.Add(restraints["slAsure"]);
+                    gamefield.scrRestraints.Add(restraints["slConf"]);
                     slmenu = true;
                     checkSL = SaveLoad.Save;
                 }
@@ -707,6 +769,7 @@ public class GameManagerClassic : MonoBehaviour {
                 GUI.Box(SLBackRect, "", MainSkin.customStyles[0]);
                 if (GUI.Button(SLBackButtRect, "Back", MainSkin.customStyles[1]))
                 {
+                    gamefield.scrRestraints.Clear();
                     slmenu = false;
                 }
                 for (int i = 1; i<=saveSlotsNum; i++)
@@ -727,6 +790,7 @@ public class GameManagerClassic : MonoBehaviour {
                     GUI.Box(SLConfBox, "", MainSkin.customStyles[0]);
                     if (GUI.Button(SLConf, SLConfC, MainSkin.customStyles[1]))
                     {
+                        gamefield.scrRestraints.Clear();
                         asureSL = false;
                         slmenu = false;
                         if (checkSL == SaveLoad.Load)
@@ -790,34 +854,42 @@ public class GameManagerClassic : MonoBehaviour {
             GUI.Box(new Rect(rPauseW + rPlaceW + rCustomW + blackind * 3, rGpanH + blackind, rPlaceW + blackind * 2, (rGpanH + blackind) * 4), "", MainSkin.customStyles[0]);
             if (GUI.Button(fillWhiteR,fillWhiteC, MainSkin.customStyles[1]))
             {
+                gamefield.mouseRestr = true;
                 gpan = false;
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
+                ChangeStateOutlines();
                 ChangeArea = FillWhite;
             }
             if (GUI.Button(fillBlackR,fillBlackC, MainSkin.customStyles[1]))
             {
+                gamefield.mouseRestr = true;
                 gpan = false;
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
+                ChangeStateOutlines();
                 ChangeArea = FillBlack;
             }
             if (GUI.Button(invertR,invertC, MainSkin.customStyles[1]))
             {
+                gamefield.mouseRestr = true;
                 gpan = false;
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
+                ChangeStateOutlines();
                 ChangeArea = Invert;
             }
             if (GUI.Button(savePattR,savePattC, MainSkin.customStyles[1]))
             {
+                gamefield.mouseRestr = true;
                 gpan = false;
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
+                ChangeStateOutlines();
                 savePattern = true;
             }
         }
