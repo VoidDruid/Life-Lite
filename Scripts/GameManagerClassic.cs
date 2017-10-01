@@ -48,6 +48,9 @@ public class GameManagerClassic : MonoBehaviour {
     public GameObject rotate, tick, cross;
     public GameObject emptyGO;
     public GameObject patBlack, patWhite;
+    public GameObject areaOutline;
+    public float outlineScale;
+    public float outlineHeight;
     //Мама, смотри, я сделал синглтон!
     class InstPatt
     {
@@ -173,7 +176,6 @@ public class GameManagerClassic : MonoBehaviour {
         }
     }
 
-    public static GameObject clickDragNotif, redBorder;
     class AreaSelecter
     {
         private static AreaSelecter instance;
@@ -610,6 +612,19 @@ public class GameManagerClassic : MonoBehaviour {
         if (selectArea)
         {
             Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
+            /*Structers.Pair<int, int> corn1 = AreaSelecter.GetInstance().GetAreaCorners().first;
+            Structers.Pair<int, int> corn2 = AreaSelecter.GetInstance().GetAreaCorners().second;
+            List<GameObject> outlines = new List<GameObject>();
+            float xlengH = (corn2.first - corn1.first)/2;
+            float zlengH = (corn2.second- corn1.second) / 2;
+            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first + xleng, outlineHeight, corn1.second - 0.5f * outlineScale), Quaternion.identity) as GameObject);
+            outlines[0].transform.localScale = new Vector3(xlengH * 2, 1, outlineScale);
+            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first + xleng, outlineHeight, corn2.second + 0.5f * outlineScale), Quaternion.identity) as GameObject);
+            outlines[1].transform.localScale = new Vector3(xlengH * 2, 1, outlineScale);
+            outlines.Add(Instantiate(areaOutline, new Vector3(corn1.first - 0.5f * outlineScale, outlineHeight, corn1.second + zlengH ), Quaternion.identity) as GameObject);
+            outlines[2].transform.localScale = new Vector3(outlineScale, 1, zlengH*2);
+            outlines.Add(Instantiate(areaOutline, new Vector3(corn2.first + 0.5f * outlineScale, outlineHeight, corn1.second + zlengH), Quaternion.identity) as GameObject);
+            outlines[3].transform.localScale = new Vector3(outlineScale, 1, zlengH * 2);*/
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
             {
