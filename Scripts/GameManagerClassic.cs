@@ -18,6 +18,10 @@ public class GameManagerClassic : MonoBehaviour {
     public static FieldScript gamefield;
 
     //TODO Resoursec.Load / unload
+    private int customPatCount = 0;
+    string customPatPfxCount = "_count";
+    string customPatsBaseKey = "custom_pat";
+    string customPatsLanePfx = "_lane_";
     public TextAsset movPatterns;
     public TextAsset periPatterns;
     public TextAsset genPatterns;
@@ -295,62 +299,43 @@ public class GameManagerClassic : MonoBehaviour {
         CameraPos.z = gamefield.GetSize().second / 2 - 0.5f;
         this.transform.position = CameraPos;
     }
+
+    List<Pattern> custPat = new List<Pattern>();
     void LoadCustoms()
     {
-        Debug.Log("customs: ");
-        string patConts = customPatterns.text;
-        for (int i = 0; i < patConts.Length; i++)
+        if (PlayerPrefs.HasKey(customPatsBaseKey + customPatPfxCount))
         {
-            if (patConts[i] == '.' && i < patConts.Length - 1)
+            customPatCount = PlayerPrefs.GetInt(customPatsBaseKey + customPatPfxCount);
+            for (int i = 0; i < customPatCount; i++)
             {
-                i++;
-                Pattern pat = new Pattern();
-                string name = "";
-                while (patConts[i] != ':' && i < patConts.Length)
+                Pattern custom = new Pattern();
+                string name = "custom " + i;
+                custom.name = name;
+                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + name);
+                List<List<bool>> def = new List<List<bool>>();
+                for (int j = 0; j < size; j++)
                 {
-                    name += patConts[i];
-                    i++;
+                    //ОЧЕНЬ КРИВО
+                    //FIXME
+                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + j);
+                    List<bool> tmpL = new List<bool>();
+                    tmpL.AddRange(tmp);
+                    def.Add(tmpL);
                 }
-                pat.name = name;
-                List<bool> row = new List<bool>();
-                while (patConts[i] != ';' && i < patConts.Length)
-                {
-                    if (patConts[i] == '0')
-                    {
-                        row.Add(false);
-                    }
-                    if (patConts[i] == '1')
-                    {
-                        row.Add(true);
-                    }
-                    if (patConts[i] == '_')
-                    {
-                        pat.def.Add(row);
-                        row = new List<bool>();
-                    }
-                    i++;
-                }
-                custPat.Add(pat);
+                custom.def = def;
+                custPat.Add(custom);
             }
+            //DEBUG 
+            InstPatt.GetInstance().Place(custPat[0], this.transform.position, 0);
+            placing = true;
+            //DEBUG END
         }
-        //DEBUG
-        /*for (int i = 0; i < custPat.Count; i++)
-        {
-            Debug.Log(custPat[i].name);
-            string row = "";
-            for (int a = 0; a < custPat[i].def.Count; a++)
-            {
-                for (int b = 0; b < custPat[i].def[a].Count; b++)
-                    row += custPat[i].def[a][b];
-                Debug.Log(row);
-                row = "";
-            }
-        }*/
     }
 
     List<List<Pattern>> Patterns = new List<List<Pattern>>();
     void Start()
     {
+        LoadCustoms();
         outlineRot.eulerAngles = new Vector3(90, 0, 0);
         outlines = new List<GameObject>();
         for (int i = 0; i<4;i++)
@@ -416,7 +401,7 @@ public class GameManagerClassic : MonoBehaviour {
                 }
             }*/
         }
-        LoadCustoms();
+        //LoadCustoms();
         ResetCamera();
         CalculateGUI();
     }
@@ -915,17 +900,15 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
-    List<Pattern> custPat = new List<Pattern>();
+    //TODO
+    //make save to PlayerPrefs
     void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
-        string path = "Assets/Texts/customPatterns.txt";
-        StreamWriter writer = new StreamWriter(path, true);
+        //string path = "Assets/Texts/customPatterns.txt";
+        //StreamWriter writer = new StreamWriter(path, true);
         Structers.Pair<int, int> corn1 = coord.first;
         Structers.Pair<int, int> corn2 = coord.second;
-        string name = "custom" + custPat.Count;
-        Pattern custom = new Pattern();
-        custom.name = name;
-        writer.Write("." + name + ":" + writer.NewLine);
+        //writer.Write("." + name + ":" + writer.NewLine);
         List<List<bool>> pat = new List<List<bool>>();
         List<bool> row = new List<bool>();
         for (int i = corn1.first-1; i <= corn2.first; i++)
@@ -933,20 +916,27 @@ public class GameManagerClassic : MonoBehaviour {
             for (int j = corn1.second; j <= corn2.second; j++)
             {
                 row.Add(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? true : false);
-                writer.Write(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? '1' : '0');
+                //writer.Write(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? '1' : '0');
             }
-            writer.Write('_' + writer.NewLine);
+            //writer.Write('_' + writer.NewLine);
             row = new List<bool>();
             pat.Add(row);
         }
-        writer.Write(';' + writer.NewLine);
-        writer.Close();
-        Debug.Log("saved");
+        //writer.Write(';' + writer.NewLine);
+        //writer.Close(); 
+        Pattern custom = new Pattern();
+        string name = "custom " + customPatCount;
+        custom.name = name;
         custom.def = pat;
         custPat.Add(custom);
+        customPatCount++;
+        PlayerPrefs.SetInt(customPatsBaseKey + customPatPfxCount, customPatCount);
+        int size = pat.Count;
+        List<bool>[] arr = pat.ToArray();
+        PlayerPrefs.SetInt(customPatsBaseKey + "_" + name, size);
+        for (int i = 0; i < arr.Length; i++)
+            PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + i, arr[i].ToArray());
+        Debug.Log("saved");
         savePattern = false;
-        /*DEBUG*/InstPatt.GetInstance().Place(custPat[custPat.Count-1], this.transform.position, 0);
-        placing = true;
     }
-    //git coomit from atom
 }
