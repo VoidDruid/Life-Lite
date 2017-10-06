@@ -18,6 +18,10 @@ public class GameManagerClassic : MonoBehaviour {
     public static FieldScript gamefield;
 
     //TODO Resoursec.Load / unload
+    private int customPatCount = 0;
+    string customPatPfxCount = "_count";
+    string customPatsBaseKey = "custom_pat";
+    string customPatsLanePfx = "_lane_";
     public TextAsset movPatterns;
     public TextAsset periPatterns;
     public TextAsset genPatterns;
@@ -264,14 +268,25 @@ public class GameManagerClassic : MonoBehaviour {
         }
     }
 
-    void Awake ()
+    public void Woke (string state)
     {
         Debug.Log("GAME AWAKE");
         that = GetComponent<GameManagerClassic>();
         gamefield = this.GetComponent<FieldScript>();
         gamefield.Initialize(xleng, zleng);
         cam = gamefield.cam;
-        gamefield.CreateEmptyField();
+        switch (state)
+        {
+            case "false":
+                gamefield.CreateEmptyField(false);
+                break;
+            case "true":
+                gamefield.CreateEmptyField(true);
+                break;
+            case "random":
+                gamefield.CreateRandomField();
+                break;
+        }
         gamefield.SetTurnSpeed(TurnTm);
         ResetCamera();
     }
@@ -284,62 +299,39 @@ public class GameManagerClassic : MonoBehaviour {
         CameraPos.z = gamefield.GetSize().second / 2 - 0.5f;
         this.transform.position = CameraPos;
     }
+
+    List<Pattern> custPat = new List<Pattern>();
     void LoadCustoms()
     {
-        Debug.Log("customs: ");
-        string patConts = customPatterns.text;
-        for (int i = 0; i < patConts.Length; i++)
+        if (PlayerPrefs.HasKey(customPatsBaseKey + customPatPfxCount))
         {
-            if (patConts[i] == '.' && i < patConts.Length - 1)
+            customPatCount = PlayerPrefs.GetInt(customPatsBaseKey + customPatPfxCount);
+            for (int i = 0; i < customPatCount; i++)
             {
-                i++;
-                Pattern pat = new Pattern();
-                string name = "";
-                while (patConts[i] != ':' && i < patConts.Length)
+                Pattern custom = new Pattern();
+                string name = "custom " + i;
+                custom.name = name;
+                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + name);
+                List<List<bool>> def = new List<List<bool>>();
+                for (int j = 0; j < size; j++)
                 {
-                    name += patConts[i];
-                    i++;
+                    //ОЧЕНЬ КРИВО
+                    //FIXME
+                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + j);
+                    List<bool> tmpL = new List<bool>();
+                    tmpL.AddRange(tmp);
+                    def.Add(tmpL);
                 }
-                pat.name = name;
-                List<bool> row = new List<bool>();
-                while (patConts[i] != ';' && i < patConts.Length)
-                {
-                    if (patConts[i] == '0')
-                    {
-                        row.Add(false);
-                    }
-                    if (patConts[i] == '1')
-                    {
-                        row.Add(true);
-                    }
-                    if (patConts[i] == '_')
-                    {
-                        pat.def.Add(row);
-                        row = new List<bool>();
-                    }
-                    i++;
-                }
-                custPat.Add(pat);
+                custom.def = def;
+                custPat.Add(custom);
             }
         }
-        //DEBUG
-        /*for (int i = 0; i < custPat.Count; i++)
-        {
-            Debug.Log(custPat[i].name);
-            string row = "";
-            for (int a = 0; a < custPat[i].def.Count; a++)
-            {
-                for (int b = 0; b < custPat[i].def[a].Count; b++)
-                    row += custPat[i].def[a][b];
-                Debug.Log(row);
-                row = "";
-            }
-        }*/
     }
 
     List<List<Pattern>> Patterns = new List<List<Pattern>>();
     void Start()
     {
+        LoadCustoms();
         outlineRot.eulerAngles = new Vector3(90, 0, 0);
         outlines = new List<GameObject>();
         for (int i = 0; i<4;i++)
@@ -405,37 +397,34 @@ public class GameManagerClassic : MonoBehaviour {
                 }
             }*/
         }
-        LoadCustoms();
+        //LoadCustoms();
         ResetCamera();
         CalculateGUI();
     }
 
     //Rectы для всего GUI
-    private Rect pauseR, placeR, customR, toolsR;
+    private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR;
     private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
     private Rect tickR, crossR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
-    //private Rect pauser, mover, perir, statr, generr, userr, lastr, saver, loadr, conr, shopr, exitr, nsr;
-    //полезное место на экране. суть - места не занятые промежутками между элементами GUI
-    private int usfspace;
+    
+
     public GUISkin GameGUI;
     //изображения стрелок "вверх" и "вниз"
     public Texture2D arrup, arrdwn;
     //длина "черного" отступа
     public int blackind;
     //контент для GUI
-    public GUIContent pauseC, placeC, customC, toolsC;
+    public GUIContent pauseC, placeC, customC, toolsC, autoturnC;
     public GUIContent continueC, exitC, saveC, loadC, optionsC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
     public GUIContent tickC, crossC;
     public GUIContent SLConfC;
-    //GUI styles. ваш копетан.
-    private GUIStyle whites, blacks;
     //какую часть ширинvы экрана занимает каждый элемент GUI
-    public float pauseW, placeW, customW, toolsW;
+    public float pauseW, placeW, customW, toolsW, timerW, autoturnW;
     public float gpanH, placeBoxHW;
     public float pauseMenuW, pauseMenuH;
     public float SaveSlotsSpaceH;
@@ -445,10 +434,11 @@ public class GameManagerClassic : MonoBehaviour {
 
     //реальная ширина элементов GUI в пикселях
     private static int rGpanH;
-    private int rPauseW, rPlaceW, rCustomW, rToolsW;
-    private  int rPlaceBoxHW;
+    private int rPauseW, rPlaceW, rCustomW, rToolsW, rTimerW, rAutoturnW;
+    private int rPlaceBoxHW;
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
+    private int rCustomPlaceBoxH, rCustomPlaceBoxW;
 
     private int rSlotH;
     Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
@@ -520,18 +510,28 @@ public class GameManagerClassic : MonoBehaviour {
         SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rSlotH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
         SLConf = new Rect(SLConfBox.x + blackind, SLConfBox.y + blackind, SLConfBox.width - blackind * 2, SLConfBox.height - blackind * 2);
         restraints.Add("slConf", SLConfBox);
+
+        rCustomPlaceBoxH = rPlaceBoxHW;
+        rCustomPlaceBoxW = rCustomW;
+
+        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind*2;
+        autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
+        rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
+        timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
     }
 
-    bool updated = false;
+
     GameObject pressedGo;
     bool getoffset = false;
-    bool mousemoved = false;
     bool dragpatt = false;
     Rect area = new Rect(0, 0, 0, 0);
+    float autoturnTime = 2;
     void Update()
     {
         gamefield.paused = paused;
         gamefield.mouseRestr = false;
+        gamefield.autoturn = autoturn;
+        gamefield.autoturnTime = autoturnTime;
         if (placing)
         {
             if (Input.GetMouseButtonDown(0))
@@ -601,11 +601,6 @@ public class GameManagerClassic : MonoBehaviour {
             AreaSelecter.GetInstance().SetArea();
         }
         gamefield.PCalculations();
-        updated = true;
-    }
-    void LateUpdate()
-    {
-        updated = false;
     }
 
     //а ну ка, опробуем делегаты
@@ -620,6 +615,9 @@ public class GameManagerClassic : MonoBehaviour {
     bool slmenu = false, asureSL = false;
     bool optionsmenu = false;
     bool savePattern = false;
+    bool customPlaceMenu= false;
+    bool autoturn = false;
+    string readFromTime = "2";
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -642,23 +640,10 @@ public class GameManagerClassic : MonoBehaviour {
     //TODO: автоматизировать убирание/появление gpan, паузу и пр.
     void OnGUI()
     {
-
         if (selectArea)
         {
-            Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
-            /*Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>> temp = AreaSelecter.GetInstance().GetAreaCorners();
-            Structers.Pair<int, int> corn1 = temp.first;
-            Structers.Pair<int, int> corn2 = temp.second;
-            float xlengH = (corn2.first - corn1.first)/2;
-            float zlengH = (corn2.second- corn1.second) / 2;
-            outlines[0].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn1.second - 0.5f * outlineScale);
-            outlines[0].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
-            outlines[1].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn2.second + 0.5f * outlineScale);
-            outlines[1].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
-            outlines[2].transform.position = new Vector3(corn1.first - 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
-            outlines[2].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);
-            outlines[3].transform.position = new Vector3(corn2.first + 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
-            outlines[3].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);*/
+            if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
+                Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
 
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
@@ -684,6 +669,7 @@ public class GameManagerClassic : MonoBehaviour {
                 gpan = true;
             }
         }
+
         if (!pauseMenu && gpan)
         {
             GUI.Box(new Rect(0, 0, Screen.width, rGpanH + blackind), "", MainSkin.customStyles[0]);
@@ -691,24 +677,35 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 gamefield.scrRestraints.Add(restraints["pauseMenu"]);
                 paused = pauseMenu = true;
-                placeMenu = placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placeMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(placeR, placeC, MainSkin.customStyles[1]))
             {
-                paused = !paused;
+                paused = !placeMenu;
                 placeMenu = !placeMenu;
-                placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(customR, customC, MainSkin.customStyles[1]))
             {
-                //TODO
+                paused = !customPlaceMenu;
+                customPlaceMenu = !customPlaceMenu;
+                placeMenu = placePatTMenu = toolsMenu = false;
+                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth, Screen.height - rCustomPlaceBoxH - blackind);
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
-                paused = !paused;
+                
+                paused = !toolsMenu;
                 toolsMenu = !toolsMenu;
-                placePatTMenu = placeMenu = false;
+                customPlaceMenu = placePatTMenu = placeMenu = false;
             }
+
+            readFromTime = GUI.TextField(timerR, readFromTime, MainSkin.textField);
+            for (int i = 0; i < readFromTime.Length; i++)
+                if (!char.IsNumber(readFromTime[i]))
+                    readFromTime = readFromTime.Remove(i, 1);
+            autoturnTime = int.Parse(readFromTime);
+            autoturn = GUI.Toggle(autoturnR, autoturn, " ", MainSkin.customStyles[3]);
         }
         if (pauseMenu)
         {
@@ -731,7 +728,8 @@ public class GameManagerClassic : MonoBehaviour {
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
                 }
-                //TODOs
+
+                //TODO
                 if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))
                 {
                     gamefield.scrRestraints.Clear();
@@ -786,7 +784,7 @@ public class GameManagerClassic : MonoBehaviour {
                 if (asureSL)
                 {
                     GUI.Box(SLAsureQBox, "", MainSkin.customStyles[0]);
-                    GUI.Box(SLAsureQ, (checkSL == SaveLoad.Load) ? "Load " : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot " + chosedSaveSlot + "?", MainSkin.customStyles[1]);
+                    GUI.Box(SLAsureQ, ((checkSL == SaveLoad.Load) ? "Load from slot " : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot ") + chosedSaveSlot + "?", MainSkin.customStyles[1]);
                     GUI.Box(SLConfBox, "", MainSkin.customStyles[0]);
                     if (GUI.Button(SLConf, SLConfC, MainSkin.customStyles[1]))
                     {
@@ -849,6 +847,21 @@ public class GameManagerClassic : MonoBehaviour {
                 GUI.EndScrollView();
             }
         }
+        if (customPlaceMenu)
+        {
+            scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW, custPat.Count * rCustomPlaceBoxH));
+            for (int i = 0; i < custPat.Count; i++)
+                if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+                {
+                    customPlaceMenu = false;
+                    paused = true;
+                    placing = true;
+                    gpan = false;
+                    InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
+                    break;
+                }
+            GUI.EndScrollView();
+        }
         if (toolsMenu)
         {
             GUI.Box(new Rect(rPauseW + rPlaceW + rCustomW + blackind * 3, rGpanH + blackind, rPlaceW + blackind * 2, (rGpanH + blackind) * 4), "", MainSkin.customStyles[0]);
@@ -901,6 +914,7 @@ public class GameManagerClassic : MonoBehaviour {
             gamefield.FlipCell(item.first, item.second);
         Debug.Log("Inverted");
     }
+
     void FillBlack (List<Structers.Pair<int, int>> area)
     {
         foreach (var item in area)
@@ -908,6 +922,7 @@ public class GameManagerClassic : MonoBehaviour {
                 gamefield.FlipCell(item.first, item.second);
         Debug.Log("Filled black");
     }
+
     void FillWhite(List<Structers.Pair<int, int>> area)
     {
         foreach (var item in area)
@@ -916,17 +931,13 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
-    List<Pattern> custPat = new List<Pattern>();
     void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
-        string path = "Assets/Texts/customPatterns.txt";
-        StreamWriter writer = new StreamWriter(path, true);
+        //string path = "Assets/Texts/customPatterns.txt";
+        //StreamWriter writer = new StreamWriter(path, true);
         Structers.Pair<int, int> corn1 = coord.first;
         Structers.Pair<int, int> corn2 = coord.second;
-        string name = "custom" + custPat.Count;
-        Pattern custom = new Pattern();
-        custom.name = name;
-        writer.Write("." + name + ":" + writer.NewLine);
+        //writer.Write("." + name + ":" + writer.NewLine);
         List<List<bool>> pat = new List<List<bool>>();
         List<bool> row = new List<bool>();
         for (int i = corn1.first-1; i <= corn2.first; i++)
@@ -934,20 +945,27 @@ public class GameManagerClassic : MonoBehaviour {
             for (int j = corn1.second; j <= corn2.second; j++)
             {
                 row.Add(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? true : false);
-                writer.Write(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? '1' : '0');
+                //writer.Write(gamefield.Cells[i, j].transform.rotation == gamefield.AliveR ? '1' : '0');
             }
-            writer.Write('_' + writer.NewLine);
+            //writer.Write('_' + writer.NewLine);
             row = new List<bool>();
             pat.Add(row);
         }
-        writer.Write(';' + writer.NewLine);
-        writer.Close();
-        Debug.Log("saved");
+        //writer.Write(';' + writer.NewLine);
+        //writer.Close(); 
+        Pattern custom = new Pattern();
+        string name = "custom " + customPatCount;
+        custom.name = name;
         custom.def = pat;
         custPat.Add(custom);
+        customPatCount++;
+        PlayerPrefs.SetInt(customPatsBaseKey + customPatPfxCount, customPatCount);
+        int size = pat.Count;
+        List<bool>[] arr = pat.ToArray();
+        PlayerPrefs.SetInt(customPatsBaseKey + "_" + name, size);
+        for (int i = 0; i < arr.Length; i++)
+            PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + i, arr[i].ToArray());
+        Debug.Log("saved");
         savePattern = false;
-        /*DEBUG*/InstPatt.GetInstance().Place(custPat[custPat.Count-1], this.transform.position, 0);
-        placing = true;
     }
-    //git coomit from atom
 }

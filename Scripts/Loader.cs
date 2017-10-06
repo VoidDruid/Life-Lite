@@ -64,10 +64,16 @@ public class Loader {
             for (int i = 1; i < lengthx - 1; i++)
                 for (int z = 1; z < lengthz - 1; z++)
                 {
+
                     if (field.CellStatsR[i, z])
+                    {
                         field.Cells[i, z].transform.rotation = field.AliveR;
+                        field.ReActivate(i, z);
+                    }
                     if (!field.CellStatsR[i, z])
                         field.Cells[i, z].transform.rotation = field.DeadR;
+                    //FIXME
+                    //quick solution
                 }
             field.SetAllModefied();
             Debug.Log("loaded on " + savenum + " with: " + lengthx + ", " + lengthz);

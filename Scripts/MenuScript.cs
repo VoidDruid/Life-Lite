@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class MenuScript : MonoBehaviour {
 	public GUIContent Playc, Restartc, Exitc;
@@ -12,10 +13,9 @@ public class MenuScript : MonoBehaviour {
 	public GameObject  GameCameraPref;
     public float movetime;
 	private float rBoxS, rIndent, rExitS;
-	private bool InGame, Exiting;
 	private GameObject GameCamera;
     FieldScript menufield;
-	
+
 	// Use this for initialization
 	void Start () {
         Screen.orientation = ScreenOrientation.LandscapeLeft;
@@ -24,24 +24,47 @@ public class MenuScript : MonoBehaviour {
         menufield.Initialize(xleng, zleng);
         menufield.SetTurnSpeed(TurnTm);
         menufield.CreateRandomField();
+        menufield.mainMenu = true;
 		InGame = false;
 		rBoxS = Screen.width * BoxS;
 		rIndent = Screen.width * Indent;
 		rExitS = Screen.width * ExitS;
         this.transform.position = new Vector3(xleng / 2, 7, 3);
+        GUICalc();
 	}
 
-    // Update is called once per frame
-    float timer;
-	void Update () {
-        menufield.PCalculations();
-        timer += Time.deltaTime;
-        if (timer>movetime)
-        {
-            menufield.Turn();
-            timer = 0;
-        }
-	}
+    public int blackind = 1;
+    public float fieldSettingsW;
+    public float fieldSettigsH;
+    public GUIContent xInputC, yInputC, typeSelecterC, confirmC, backC;
+    private float fieldSettingsRealW, fieldSettigsRealH;
+    private float fieldSettingsElemRealW, fieldSettingsElemRealH;
+    float halfElemRealWL, halfElemRealWR;
+    float halfElemRightPos;
+    private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
+    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR, typeSelecterBoxR;
+    const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
+    void GUICalc()
+    {
+        fieldSettingsRealW = Screen.width * fieldSettingsW + blackind * 2;
+        fieldSettigsRealH = Screen.height * fieldSettigsH + blackind * 4;
+        fieldMenuBoxR = new Rect((Screen.width - fieldSettingsRealW) / 2, (Screen.height - fieldSettigsRealH) / 2, fieldSettingsRealW, fieldSettigsRealH);
+        fieldSettingsElemRealH = (fieldSettigsRealH - blackind * 4) / 3;
+        fieldSettingsElemRealW = (fieldSettingsRealW - blackind * 2);
+        //fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR
+        halfElemRealWL = fieldSettingsElemRealW / 2 - blackind;
+        halfElemRealWR = fieldSettingsElemRealW / 2;
+        fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        halfElemRightPos = fieldXInR.x + fieldXInR.width + blackind;
+        fieldYInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
+        fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectEmptR = new Rect(fieldMenuBoxR.x + fieldMenuBoxR.width, fieldTypeSelectR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
+        typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
+        typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
+    }
     
     void Continue()
     {
@@ -50,45 +73,147 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
         camrot.eulerAngles = StartCameraRot;
         GameCamera = Instantiate(GameCameraPref, new Vector3(0, 0, 0), camrot) as GameObject;
+        GameCamera.GetComponent<GameManagerClassic>().Woke("false");
         InGame = true;
         Loader.Load(0, ref GameManagerClassic.gamefield);
         Destroy(this.gameObject);
     }
 
-	void FRestart() {
+	void FRestart(string fType) {
         Debug.Log("FRestart");
         menufield.DestroyField();
         Quaternion camrot = Quaternion.identity;
 		camrot.eulerAngles = StartCameraRot;
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
-		InGame = true;
+        GameCamera.GetComponent<GameManagerClassic>().xleng = xleng;
+        GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
+        switch (fType)
+        {
+            case typeWhite:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("false");
+                break;
+            case typeBlack:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("true");
+                break;
+            case typeRandom:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("random");
+                break;
+            default:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("false");
+                break;
+        }
+        InGame = true;
 		Destroy(this.gameObject);
 	}
 
-	void OnGUI() {
-        if (!InGame && !Exiting)
+    
+    // Update is called once per frame
+    float timer;
+    void Update()
+    { 
+        menufield.PCalculations();
+        timer += Time.deltaTime;
+        if (timer > movetime)
         {
-            //DEBUG START
-            if (GUI.Button(new Rect (0,0,50,50)," Clear prefs"))
+            menufield.Turn();
+            timer = 0;
+        }
+    }
+    string xInput = "30";
+    string yInput = "30";
+    bool fieldMenu = false;
+    bool generalMenu = true;
+    bool typeSelector = false;
+    bool InGame, Exiting;
+    string typeSelectT = "Select type";
+    void OnGUI() {
+        if (!InGame)
+        {
+            
+            if (generalMenu)
             {
-                
-                PlayerPrefs.DeleteAll();
-                Debug.Log("cleared player prefs");
-                
-            }
-            //DEBUG END
+                //DEBUG START
+                if (GUI.Button(new Rect(0, 0, 50, 50), " Clear prefs"))
+                {
+                    PlayerPrefs.DeleteAll();
+                    Debug.Log("cleared player prefs");
+                }
+                //DEBUG END
 
-            if (GUI.Button(new Rect((Screen.width - rBoxS * 2 - rIndent) / 2, (Screen.height - rBoxS) / 2, rBoxS, rBoxS), Playc, MainSkin.customStyles[2]))
-            {
-                Continue();
+                if (GUI.Button(new Rect((Screen.width - rBoxS * 2 - rIndent) / 2, (Screen.height - rBoxS) / 2, rBoxS, rBoxS), Playc, MainSkin.customStyles[2]))
+                {
+                    Continue();
+                    generalMenu = false;
+                }
+                if (GUI.Button(new Rect((Screen.width - rBoxS * 2 - rIndent) / 2 + rBoxS + rIndent, (Screen.height - rBoxS) / 2, rBoxS, rBoxS), Restartc, MainSkin.customStyles[2]))
+                {
+                    generalMenu = false;
+                    fieldMenu = true;
+                }
+                if (GUI.Button(new Rect(Screen.width - rExitS, Screen.height - rExitS, rExitS, rExitS), Exitc, MainSkin.customStyles[2]))
+                {
+                    Exiting = true;
+                    generalMenu = false;
+                }
             }
-            if (GUI.Button(new Rect((Screen.width - rBoxS * 2 - rIndent) / 2 + rBoxS + rIndent, (Screen.height - rBoxS) / 2, rBoxS, rBoxS), Restartc, MainSkin.customStyles[2]))
+            if (fieldMenu)
             {
-                FRestart();
-            }
-            if (GUI.Button(new Rect(Screen.width - rExitS, Screen.height - rExitS, rExitS, rExitS), Exitc, MainSkin.customStyles[2]))
-            {
-                Exiting = true;
+                GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
+                if (!typeSelector)
+                {
+                    xInput = GUI.TextField(fieldXInR, xInput, MainSkin.textField);
+                    for (int i = 0; i < xInput.Length; i++)
+                        if (!char.IsNumber(xInput[i]))
+                            xInput = xInput.Remove(i, 1);
+                    xleng = int.Parse(xInput);
+                    yInput = GUI.TextField(fieldYInR, yInput, MainSkin.textField);
+                    for (int i = 0; i < yInput.Length; i++)
+                        if (!char.IsNumber(yInput[i]))
+                            yInput = yInput.Remove(i, 1);
+                    zleng = int.Parse(yInput);
+                }
+                else
+                {
+                    GUI.Box(fieldXInR, xInput, MainSkin.textField);
+                    GUI.Box(fieldYInR, yInput, MainSkin.textField);
+                }
+                //Debug.Log("lengs: " + xleng + " " + zleng);
+                if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = true;
+                }
+                if (GUI.Button(fieldConfirmR, confirmC, MainSkin.customStyles[1]))
+                {
+                    FRestart(typeSelecterC.text);
+                }
+                if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = false;
+                    typeSelecterC.text = typeSelectT;
+                    generalMenu = true;
+                    fieldMenu = false;
+                    xInput = "30";
+                    yInput = "30";
+                }
+                if (typeSelector)
+                {
+                    GUI.Box(typeSelecterBoxR, " ", MainSkin.customStyles[0]);
+                    if (GUI.Button(typeSelectEmptR, "Empty", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: empty";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectBlackR, "Black", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: black";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectRandR, "Random", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: random";
+                        typeSelector = false;
+                    }
+                }
             }
         }
         if (Exiting)

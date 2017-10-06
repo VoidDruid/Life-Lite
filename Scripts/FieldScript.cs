@@ -4,7 +4,14 @@ using System.Collections.Generic;
 
 public class FieldScript : MonoBehaviour
 {
+    //TEMPORARY FIX
+    //TODO
+    public bool mainMenu = false;
+
     GameManagerClassic manager;
+
+    public bool autoturn;
+    public float autoturnTime;
     public float rGpanH;
     //собственно префаб клетки
     public GameObject Cell, RBord, RCorner;
@@ -57,7 +64,7 @@ public class FieldScript : MonoBehaviour
         Cells[i, j].transform.GetChild(1).gameObject.SetActive(true);
     }
 
-    void ReActivate(int i, int j)
+    public void ReActivate(int i, int j)
     {
         if (Cells[i, j].transform.GetChild(0).gameObject.activeSelf)
         {
@@ -93,7 +100,7 @@ public class FieldScript : MonoBehaviour
         DestroyField();
         PrepareArrays();
         Initialize(x, z);
-        CreateEmptyField();
+        CreateEmptyField(false);
     }
 
     public void SetTurnSpeed(float TurnTm)
@@ -204,7 +211,7 @@ public class FieldScript : MonoBehaviour
     //создаем пустое поле
     GameObject bord1, bord2, bord3, bord4;
     GameObject corn1, corn2, corn3, corn4;
-    public void CreateEmptyField ()
+    public void CreateEmptyField (bool state)
     {
         Debug.Log("size on empty creation: " + lengthx + ", " + lengthz);
         //создаем поле
@@ -212,7 +219,7 @@ public class FieldScript : MonoBehaviour
             for (int j = 1; j < lengthz - 1; j++)
             {
                 //инстансим клетки
-                Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), Quaternion.identity) as GameObject;
+                Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), state ? AliveRot : DeadRot) as GameObject;
                 CellStatsR[i, j] = false;
                 CellStatsPrep[i, j] = false;
             }
@@ -231,7 +238,11 @@ public class FieldScript : MonoBehaviour
                 if (Random.Range(0, 2) == 1) ran = true;
                 else ran = false;
                 //инстансим клетки
-                if (ran) Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), AliveRot) as GameObject;
+                if (ran)
+                {
+                    Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), AliveRot) as GameObject;
+                    ReActivate(i, j);
+                }
                 else Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), DeadRot) as GameObject;
 
                 CellStatsR[i, j] = ran;     
@@ -320,8 +331,8 @@ public class FieldScript : MonoBehaviour
     }
 
     float deltaAng = 0;
+    float timer = 0;
     GameObject pressedGo;
-    bool wassaving, wasloading;
     bool mouse0pushed = false;
     public Camera cam;
     bool getoffset = false, mousemoved = false;
@@ -337,9 +348,9 @@ public class FieldScript : MonoBehaviour
             }
         }      
         //TODO
-        if (!turning && !wassaving && !wasloading)
+        if (!turning/* && !wassaving && !wasloading*/)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !mainMenu)
             {
                 mouse0pushed = true;
                 pressedGo = GetPressedGO();
@@ -372,7 +383,7 @@ public class FieldScript : MonoBehaviour
             }
 
             //обработка нажатия                                                 /*проверка, не нажали ли на GUI*/
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0) && !mainMenu)
             {
                 
                 if (!mousemoved && Input.mousePosition.y < (Screen.height - rGpanH) && !mouseRestr && mouse0pushed)
@@ -394,9 +405,19 @@ public class FieldScript : MonoBehaviour
                 getoffset = false;
                 mousemoved = false;
             }
-            if (Input.GetMouseButtonDown(2) && !paused)
+            if (Input.GetMouseButtonDown(2) && !paused && !autoturn)
                 Turn();
         }
+        if (autoturn && !paused && !turning)
+        {
+            timer += Time.deltaTime;
+            if (timer >= autoturnTime)
+            {
+                Turn();
+                timer = 0;
+            }
+        }
+
         if (turning)
         {
             Quaternion turnrot = new Quaternion(0, 0, 0, 0);
