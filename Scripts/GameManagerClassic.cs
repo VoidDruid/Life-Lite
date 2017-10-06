@@ -325,10 +325,6 @@ public class GameManagerClassic : MonoBehaviour {
                 custom.def = def;
                 custPat.Add(custom);
             }
-            //DEBUG 
-            InstPatt.GetInstance().Place(custPat[0], this.transform.position, 0);
-            placing = true;
-            //DEBUG END
         }
     }
 
@@ -413,6 +409,7 @@ public class GameManagerClassic : MonoBehaviour {
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
     private Rect tickR, crossR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
+    
 
     public GUISkin GameGUI;
     //изображения стрелок "вверх" и "вниз"
@@ -441,6 +438,7 @@ public class GameManagerClassic : MonoBehaviour {
     private  int rPlaceBoxHW;
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
+    private int rCustomPlaceBoxH, rCustomPlaceBoxW;
 
     private int rSlotH;
     Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
@@ -512,6 +510,9 @@ public class GameManagerClassic : MonoBehaviour {
         SLConfBox = new Rect(SLAsureQBox.x + continueR.width / 4f - blackind, SLAsureQBox.y + SLAsureQBox.height + rSlotH, continueR.width / 2 + blackind * 2, continueR.width / 2 + blackind * 2);
         SLConf = new Rect(SLConfBox.x + blackind, SLConfBox.y + blackind, SLConfBox.width - blackind * 2, SLConfBox.height - blackind * 2);
         restraints.Add("slConf", SLConfBox);
+
+        rCustomPlaceBoxH = rPlaceBoxHW;
+        rCustomPlaceBoxW = rCustomW;
     }
 
 
@@ -629,7 +630,6 @@ public class GameManagerClassic : MonoBehaviour {
     //TODO: автоматизировать убирание/появление gpan, паузу и пр.
     void OnGUI()
     {
-
         if (selectArea)
         {
             if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
@@ -671,19 +671,21 @@ public class GameManagerClassic : MonoBehaviour {
             }
             if (GUI.Button(placeR, placeC, MainSkin.customStyles[1]))
             {
-                paused = !paused;
+                paused = !placeMenu;
                 placeMenu = !placeMenu;
                 customPlaceMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(customR, customC, MainSkin.customStyles[1]))
             {
-                paused = !paused;
+                paused = !customPlaceMenu;
                 customPlaceMenu = !customPlaceMenu;
                 placeMenu = placePatTMenu = toolsMenu = false;
+                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth, Screen.height - rCustomPlaceBoxH - blackind);
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
-                paused = !paused;
+                
+                paused = !toolsMenu;
                 toolsMenu = !toolsMenu;
                 customPlaceMenu = placePatTMenu = placeMenu = false;
             }
@@ -765,7 +767,7 @@ public class GameManagerClassic : MonoBehaviour {
                 if (asureSL)
                 {
                     GUI.Box(SLAsureQBox, "", MainSkin.customStyles[0]);
-                    GUI.Box(SLAsureQ, ((checkSL == SaveLoad.Load) ? "Load from slot" : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot ") + chosedSaveSlot + "?", MainSkin.customStyles[1]);
+                    GUI.Box(SLAsureQ, ((checkSL == SaveLoad.Load) ? "Load from slot " : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot ") + chosedSaveSlot + "?", MainSkin.customStyles[1]);
                     GUI.Box(SLConfBox, "", MainSkin.customStyles[0]);
                     if (GUI.Button(SLConf, SLConfC, MainSkin.customStyles[1]))
                     {
@@ -828,6 +830,21 @@ public class GameManagerClassic : MonoBehaviour {
                 GUI.EndScrollView();
             }
         }
+        if (customPlaceMenu)
+        {
+            scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW, custPat.Count * rCustomPlaceBoxH));
+            for (int i = 0; i < custPat.Count; i++)
+                if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+                {
+                    customPlaceMenu = false;
+                    paused = true;
+                    placing = true;
+                    gpan = false;
+                    InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
+                    break;
+                }
+            GUI.EndScrollView();
+        }
         if (toolsMenu)
         {
             GUI.Box(new Rect(rPauseW + rPlaceW + rCustomW + blackind * 3, rGpanH + blackind, rPlaceW + blackind * 2, (rGpanH + blackind) * 4), "", MainSkin.customStyles[0]);
@@ -871,11 +888,6 @@ public class GameManagerClassic : MonoBehaviour {
                 ChangeStateOutlines();
                 savePattern = true;
             }
-        }
-
-        if (customPlaceMenu)
-        {
-
         }
     }
 
