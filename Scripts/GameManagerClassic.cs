@@ -264,7 +264,7 @@ public class GameManagerClassic : MonoBehaviour {
         }
     }
 
-    void Awake ()
+    public void Woke ()
     {
         Debug.Log("GAME AWAKE");
         that = GetComponent<GameManagerClassic>();
@@ -646,19 +646,6 @@ public class GameManagerClassic : MonoBehaviour {
         if (selectArea)
         {
             Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
-            /*Structers.Pair<Structers.Pair<int, int>, Structers.Pair<int, int>> temp = AreaSelecter.GetInstance().GetAreaCorners();
-            Structers.Pair<int, int> corn1 = temp.first;
-            Structers.Pair<int, int> corn2 = temp.second;
-            float xlengH = (corn2.first - corn1.first)/2;
-            float zlengH = (corn2.second- corn1.second) / 2;
-            outlines[0].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn1.second - 0.5f * outlineScale);
-            outlines[0].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
-            outlines[1].transform.position = new Vector3(corn1.first + xleng, outlineHeight, corn2.second + 0.5f * outlineScale);
-            outlines[1].transform.localScale = new Vector3(xlengH * 2, outlineScale, 1);
-            outlines[2].transform.position = new Vector3(corn1.first - 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
-            outlines[2].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);
-            outlines[3].transform.position = new Vector3(corn2.first + 0.5f * outlineScale, outlineHeight, corn1.second + zlengH);
-            outlines[3].transform.localScale = new Vector3(outlineScale, zlengH * 2, 1);*/
 
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
