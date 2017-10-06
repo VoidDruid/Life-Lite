@@ -57,7 +57,7 @@ public class FieldScript : MonoBehaviour
         Cells[i, j].transform.GetChild(1).gameObject.SetActive(true);
     }
 
-    void ReActivate(int i, int j)
+    public void ReActivate(int i, int j)
     {
         if (Cells[i, j].transform.GetChild(0).gameObject.activeSelf)
         {
