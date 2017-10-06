@@ -403,7 +403,7 @@ public class GameManagerClassic : MonoBehaviour {
     }
 
     //Rectы для всего GUI
-    private Rect pauseR, placeR, customR, toolsR;
+    private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR;
     private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
@@ -417,14 +417,14 @@ public class GameManagerClassic : MonoBehaviour {
     //длина "черного" отступа
     public int blackind;
     //контент для GUI
-    public GUIContent pauseC, placeC, customC, toolsC;
+    public GUIContent pauseC, placeC, customC, toolsC, autoturnC;
     public GUIContent continueC, exitC, saveC, loadC, optionsC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
     public GUIContent tickC, crossC;
     public GUIContent SLConfC;
     //какую часть ширинvы экрана занимает каждый элемент GUI
-    public float pauseW, placeW, customW, toolsW;
+    public float pauseW, placeW, customW, toolsW, timerW, autoturnW;
     public float gpanH, placeBoxHW;
     public float pauseMenuW, pauseMenuH;
     public float SaveSlotsSpaceH;
@@ -434,8 +434,8 @@ public class GameManagerClassic : MonoBehaviour {
 
     //реальная ширина элементов GUI в пикселях
     private static int rGpanH;
-    private int rPauseW, rPlaceW, rCustomW, rToolsW;
-    private  int rPlaceBoxHW;
+    private int rPauseW, rPlaceW, rCustomW, rToolsW, rTimerW, rAutoturnW;
+    private int rPlaceBoxHW;
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
     private int rCustomPlaceBoxH, rCustomPlaceBoxW;
@@ -513,6 +513,11 @@ public class GameManagerClassic : MonoBehaviour {
 
         rCustomPlaceBoxH = rPlaceBoxHW;
         rCustomPlaceBoxW = rCustomW;
+
+        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind*2;
+        autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
+        rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
+        timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
     }
 
 
@@ -520,10 +525,13 @@ public class GameManagerClassic : MonoBehaviour {
     bool getoffset = false;
     bool dragpatt = false;
     Rect area = new Rect(0, 0, 0, 0);
+    float autoturnTime = 2;
     void Update()
     {
         gamefield.paused = paused;
         gamefield.mouseRestr = false;
+        gamefield.autoturn = autoturn;
+        gamefield.autoturnTime = autoturnTime;
         if (placing)
         {
             if (Input.GetMouseButtonDown(0))
@@ -608,6 +616,8 @@ public class GameManagerClassic : MonoBehaviour {
     bool optionsmenu = false;
     bool savePattern = false;
     bool customPlaceMenu= false;
+    bool autoturn = false;
+    string readFromTime = "2";
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -689,6 +699,13 @@ public class GameManagerClassic : MonoBehaviour {
                 toolsMenu = !toolsMenu;
                 customPlaceMenu = placePatTMenu = placeMenu = false;
             }
+
+            readFromTime = GUI.TextField(timerR, readFromTime, MainSkin.textField);
+            for (int i = 0; i < readFromTime.Length; i++)
+                if (!char.IsNumber(readFromTime[i]))
+                    readFromTime = readFromTime.Remove(i, 1);
+            autoturnTime = int.Parse(readFromTime);
+            autoturn = GUI.Toggle(autoturnR, autoturn, " ", MainSkin.customStyles[3]);
         }
         if (pauseMenu)
         {

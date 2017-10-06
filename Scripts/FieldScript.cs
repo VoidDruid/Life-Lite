@@ -9,6 +9,9 @@ public class FieldScript : MonoBehaviour
     public bool mainMenu = false;
 
     GameManagerClassic manager;
+
+    public bool autoturn;
+    public float autoturnTime;
     public float rGpanH;
     //собственно префаб клетки
     public GameObject Cell, RBord, RCorner;
@@ -328,8 +331,8 @@ public class FieldScript : MonoBehaviour
     }
 
     float deltaAng = 0;
+    float timer = 0;
     GameObject pressedGo;
-    bool wassaving, wasloading;
     bool mouse0pushed = false;
     public Camera cam;
     bool getoffset = false, mousemoved = false;
@@ -345,7 +348,7 @@ public class FieldScript : MonoBehaviour
             }
         }      
         //TODO
-        if (!turning && !wassaving && !wasloading)
+        if (!turning/* && !wassaving && !wasloading*/)
         {
             if (Input.GetMouseButtonDown(0) && !mainMenu)
             {
@@ -402,9 +405,19 @@ public class FieldScript : MonoBehaviour
                 getoffset = false;
                 mousemoved = false;
             }
-            if (Input.GetMouseButtonDown(2) && !paused)
+            if (Input.GetMouseButtonDown(2) && !paused && !autoturn)
                 Turn();
         }
+        if (autoturn && !paused && !turning)
+        {
+            timer += Time.deltaTime;
+            if (timer >= autoturnTime)
+            {
+                Turn();
+                timer = 0;
+            }
+        }
+
         if (turning)
         {
             Quaternion turnrot = new Quaternion(0, 0, 0, 0);
