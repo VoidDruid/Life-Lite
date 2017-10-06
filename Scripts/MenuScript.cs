@@ -16,14 +16,6 @@ public class MenuScript : MonoBehaviour {
 	private GameObject GameCamera;
     FieldScript menufield;
 
-    public int blackind = 1;
-    public float fieldSettingsW;
-    public float fieldSettigsH;
-    public GUIContent xInputC, yInputC, typeSelecterC, confirmC; 
-    private float fieldSettingsRealW, fieldSettigsRealH;
-    private float fieldSettingsElemRealW, fieldSettingsElemRealH;
-    private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR;
-
 	// Use this for initialization
 	void Start () {
         Screen.orientation = ScreenOrientation.LandscapeLeft;
@@ -40,6 +32,15 @@ public class MenuScript : MonoBehaviour {
         GUICalc();
 	}
 
+    public int blackind = 1;
+    public float fieldSettingsW;
+    public float fieldSettigsH;
+    public GUIContent xInputC, yInputC, typeSelecterC, confirmC, backC;
+    private float fieldSettingsRealW, fieldSettigsRealH;
+    private float fieldSettingsElemRealW, fieldSettingsElemRealH;
+    float halfElemRealWL, halfElemRealWR;
+    float halfElemRightPos;
+    private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
     void GUICalc()
     {
         fieldSettingsRealW = Screen.width * fieldSettingsW + blackind * 2;
@@ -48,10 +49,14 @@ public class MenuScript : MonoBehaviour {
         fieldSettingsElemRealH = (fieldSettigsRealH - blackind * 4) / 3;
         fieldSettingsElemRealW = (fieldSettingsRealW - blackind * 2);
         //fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR
-        fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, fieldSettingsElemRealW/2 - blackind, fieldSettingsElemRealH);
-        fieldYInR = new Rect(fieldXInR.x + fieldXInR.width + blackind, fieldMenuBoxR.y + blackind,fieldSettingsElemRealW / 2, fieldSettingsElemRealH);
+        halfElemRealWL = fieldSettingsElemRealW / 2 - blackind;
+        halfElemRealWR = fieldSettingsElemRealW / 2;
+        fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        halfElemRightPos = fieldXInR.x + fieldXInR.width + blackind;
+        fieldYInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
         fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
-        fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
+        fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
     }
     
     void Continue()
@@ -146,6 +151,13 @@ public class MenuScript : MonoBehaviour {
                 if (GUI.Button(fieldConfirmR, confirmC, MainSkin.customStyles[1]))
                 {
                     FRestart();
+                }
+                if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
+                {
+                    generalMenu = true;
+                    fieldMenu = false;
+                    xInput = "30";
+                    yInput = "30";
                 }
             }
         }
