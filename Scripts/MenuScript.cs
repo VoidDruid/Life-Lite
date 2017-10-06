@@ -41,6 +41,8 @@ public class MenuScript : MonoBehaviour {
     float halfElemRealWL, halfElemRealWR;
     float halfElemRightPos;
     private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
+    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR;
+    const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
     void GUICalc()
     {
         fieldSettingsRealW = Screen.width * fieldSettingsW + blackind * 2;
@@ -57,6 +59,9 @@ public class MenuScript : MonoBehaviour {
         fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
         fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
         fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectEmptR = new Rect(fieldMenuBoxR.x + fieldMenuBoxR.width, fieldTypeSelectR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
     }
     
     void Continue()
@@ -66,13 +71,13 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
         camrot.eulerAngles = StartCameraRot;
         GameCamera = Instantiate(GameCameraPref, new Vector3(0, 0, 0), camrot) as GameObject;
-        GameCamera.GetComponent<GameManagerClassic>().Woke();
+        GameCamera.GetComponent<GameManagerClassic>().Woke("false");
         InGame = true;
         Loader.Load(0, ref GameManagerClassic.gamefield);
         Destroy(this.gameObject);
     }
 
-	void FRestart() {
+	void FRestart(string fType) {
         Debug.Log("FRestart");
         menufield.DestroyField();
         Quaternion camrot = Quaternion.identity;
@@ -80,7 +85,21 @@ public class MenuScript : MonoBehaviour {
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
         GameCamera.GetComponent<GameManagerClassic>().xleng = xleng;
         GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
-        GameCamera.GetComponent<GameManagerClassic>().Woke();
+        switch (fType)
+        {
+            case typeWhite:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("false");
+                break;
+            case typeBlack:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("true");
+                break;
+            case typeRandom:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("random");
+                break;
+            default:
+                GameCamera.GetComponent<GameManagerClassic>().Woke("false");
+                break;
+        }
         InGame = true;
 		Destroy(this.gameObject);
 	}
@@ -102,6 +121,7 @@ public class MenuScript : MonoBehaviour {
     string yInput = "30";
     bool fieldMenu = false;
     bool generalMenu = true;
+    bool typeSelector = false;
     bool InGame, Exiting;
     void OnGUI() {
         if (!InGame)
@@ -136,21 +156,32 @@ public class MenuScript : MonoBehaviour {
             if (fieldMenu)
             {
                 GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
-                xInput = GUI.TextField(fieldXInR, xInput, MainSkin.textField);
-                for (int i = 0; i < xInput.Length; i++)
-                    if (!char.IsNumber(xInput[i]))
-                        xInput = xInput.Remove(i, 1);
-                xleng = int.Parse(xInput);
-                yInput = GUI.TextField(fieldYInR, yInput, MainSkin.textField);
-                for (int i = 0; i < yInput.Length; i++)
-                    if (!char.IsNumber(yInput[i]))
-                        yInput = yInput.Remove(i, 1);
-                zleng = int.Parse(yInput);
+                if (!typeSelector)
+                {
+                    xInput = GUI.TextField(fieldXInR, xInput, MainSkin.textField);
+                    for (int i = 0; i < xInput.Length; i++)
+                        if (!char.IsNumber(xInput[i]))
+                            xInput = xInput.Remove(i, 1);
+                    xleng = int.Parse(xInput);
+                    yInput = GUI.TextField(fieldYInR, yInput, MainSkin.textField);
+                    for (int i = 0; i < yInput.Length; i++)
+                        if (!char.IsNumber(yInput[i]))
+                            yInput = yInput.Remove(i, 1);
+                    zleng = int.Parse(yInput);
+                }
+                else
+                {
+                    GUI.Box(fieldXInR, xInput, MainSkin.textField);
+                    GUI.Box(fieldYInR, yInput, MainSkin.textField);
+                }
                 //Debug.Log("lengs: " + xleng + " " + zleng);
-                GUI.Box(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]);
+                if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = true;
+                }
                 if (GUI.Button(fieldConfirmR, confirmC, MainSkin.customStyles[1]))
                 {
-                    FRestart();
+                    FRestart(typeSelecterC.text);
                 }
                 if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
                 {
@@ -158,6 +189,24 @@ public class MenuScript : MonoBehaviour {
                     fieldMenu = false;
                     xInput = "30";
                     yInput = "30";
+                }
+                if (typeSelector)
+                {
+                    if (GUI.Button(typeSelectEmptR, "Empty", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: empty";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectBlackR, "Black", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: black";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectRandR, "Random", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: random";
+                        typeSelector = false;
+                    }
                 }
             }
         }

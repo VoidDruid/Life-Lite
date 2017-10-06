@@ -264,14 +264,25 @@ public class GameManagerClassic : MonoBehaviour {
         }
     }
 
-    public void Woke ()
+    public void Woke (string state)
     {
         Debug.Log("GAME AWAKE");
         that = GetComponent<GameManagerClassic>();
         gamefield = this.GetComponent<FieldScript>();
         gamefield.Initialize(xleng, zleng);
         cam = gamefield.cam;
-        gamefield.CreateEmptyField();
+        switch (state)
+        {
+            case "false":
+                gamefield.CreateEmptyField(false);
+                break;
+            case "true":
+                gamefield.CreateEmptyField(true);
+                break;
+            case "random":
+                gamefield.CreateRandomField();
+                break;
+        }
         gamefield.SetTurnSpeed(TurnTm);
         ResetCamera();
     }

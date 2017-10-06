@@ -93,7 +93,7 @@ public class FieldScript : MonoBehaviour
         DestroyField();
         PrepareArrays();
         Initialize(x, z);
-        CreateEmptyField();
+        CreateEmptyField(false);
     }
 
     public void SetTurnSpeed(float TurnTm)
@@ -204,7 +204,7 @@ public class FieldScript : MonoBehaviour
     //создаем пустое поле
     GameObject bord1, bord2, bord3, bord4;
     GameObject corn1, corn2, corn3, corn4;
-    public void CreateEmptyField ()
+    public void CreateEmptyField (bool state)
     {
         Debug.Log("size on empty creation: " + lengthx + ", " + lengthz);
         //создаем поле
@@ -212,7 +212,7 @@ public class FieldScript : MonoBehaviour
             for (int j = 1; j < lengthz - 1; j++)
             {
                 //инстансим клетки
-                Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), Quaternion.identity) as GameObject;
+                Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), state ? AliveRot : DeadRot) as GameObject;
                 CellStatsR[i, j] = false;
                 CellStatsPrep[i, j] = false;
             }
