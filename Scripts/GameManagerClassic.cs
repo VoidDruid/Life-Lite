@@ -656,7 +656,8 @@ public class GameManagerClassic : MonoBehaviour {
 
         if (selectArea)
         {
-            Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
+            if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
+                Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
 
             GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
             if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
