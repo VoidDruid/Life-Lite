@@ -41,7 +41,7 @@ public class MenuScript : MonoBehaviour {
     float halfElemRealWL, halfElemRealWR;
     float halfElemRightPos;
     private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
-    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR;
+    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR, typeSelecterBoxR;
     const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
     void GUICalc()
     {
@@ -60,8 +60,9 @@ public class MenuScript : MonoBehaviour {
         fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
         fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
         typeSelectEmptR = new Rect(fieldMenuBoxR.x + fieldMenuBoxR.width, fieldTypeSelectR.y, halfElemRealWR, fieldSettingsElemRealH);
-        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
         typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
+        typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
     }
     
     void Continue()
@@ -123,6 +124,7 @@ public class MenuScript : MonoBehaviour {
     bool generalMenu = true;
     bool typeSelector = false;
     bool InGame, Exiting;
+    string typeSelectT = "Select type";
     void OnGUI() {
         if (!InGame)
         {
@@ -185,6 +187,8 @@ public class MenuScript : MonoBehaviour {
                 }
                 if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
                 {
+                    typeSelector = false;
+                    typeSelecterC.text = typeSelectT;
                     generalMenu = true;
                     fieldMenu = false;
                     xInput = "30";
@@ -192,6 +196,7 @@ public class MenuScript : MonoBehaviour {
                 }
                 if (typeSelector)
                 {
+                    GUI.Box(typeSelecterBoxR, " ", MainSkin.customStyles[0]);
                     if (GUI.Button(typeSelectEmptR, "Empty", MainSkin.customStyles[1]))
                     {
                         typeSelecterC.text = "Type: empty";
