@@ -413,9 +413,7 @@ public class GameManagerClassic : MonoBehaviour {
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
     private Rect tickR, crossR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
-    //private Rect pauser, mover, perir, statr, generr, userr, lastr, saver, loadr, conr, shopr, exitr, nsr;
-    //полезное место на экране. суть - места не занятые промежутками между элементами GUI
-    private int usfspace;
+
     public GUISkin GameGUI;
     //изображения стрелок "вверх" и "вниз"
     public Texture2D arrup, arrdwn;
@@ -428,8 +426,6 @@ public class GameManagerClassic : MonoBehaviour {
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
     public GUIContent tickC, crossC;
     public GUIContent SLConfC;
-    //GUI styles. ваш копетан.
-    private GUIStyle whites, blacks;
     //какую часть ширинvы экрана занимает каждый элемент GUI
     public float pauseW, placeW, customW, toolsW;
     public float gpanH, placeBoxHW;
@@ -518,10 +514,9 @@ public class GameManagerClassic : MonoBehaviour {
         restraints.Add("slConf", SLConfBox);
     }
 
-    bool updated = false;
+
     GameObject pressedGo;
     bool getoffset = false;
-    bool mousemoved = false;
     bool dragpatt = false;
     Rect area = new Rect(0, 0, 0, 0);
     void Update()
@@ -597,11 +592,6 @@ public class GameManagerClassic : MonoBehaviour {
             AreaSelecter.GetInstance().SetArea();
         }
         gamefield.PCalculations();
-        updated = true;
-    }
-    void LateUpdate()
-    {
-        updated = false;
     }
 
     //а ну ка, опробуем делегаты
@@ -775,7 +765,7 @@ public class GameManagerClassic : MonoBehaviour {
                 if (asureSL)
                 {
                     GUI.Box(SLAsureQBox, "", MainSkin.customStyles[0]);
-                    GUI.Box(SLAsureQ, (checkSL == SaveLoad.Load) ? "Load " : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot " + chosedSaveSlot + "?", MainSkin.customStyles[1]);
+                    GUI.Box(SLAsureQ, ((checkSL == SaveLoad.Load) ? "Load from slot" : (Loader.GetSizeAt(chosedSaveSlot).first!=0 ? "Rewrite " : "Save ") + "in slot ") + chosedSaveSlot + "?", MainSkin.customStyles[1]);
                     GUI.Box(SLConfBox, "", MainSkin.customStyles[0]);
                     if (GUI.Button(SLConf, SLConfC, MainSkin.customStyles[1]))
                     {
@@ -881,6 +871,11 @@ public class GameManagerClassic : MonoBehaviour {
                 ChangeStateOutlines();
                 savePattern = true;
             }
+        }
+
+        if (customPlaceMenu)
+        {
+
         }
     }
 
