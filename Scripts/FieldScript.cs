@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 public class FieldScript : MonoBehaviour
 {
+    //TEMPORARY FIX
+    //TODO
+    public bool mainMenu = false;
+
     GameManagerClassic manager;
     public float rGpanH;
     //собственно префаб клетки
@@ -231,7 +235,11 @@ public class FieldScript : MonoBehaviour
                 if (Random.Range(0, 2) == 1) ran = true;
                 else ran = false;
                 //инстансим клетки
-                if (ran) Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), AliveRot) as GameObject;
+                if (ran)
+                {
+                    Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), AliveRot) as GameObject;
+                    ReActivate(i, j);
+                }
                 else Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), DeadRot) as GameObject;
 
                 CellStatsR[i, j] = ran;     
@@ -339,7 +347,7 @@ public class FieldScript : MonoBehaviour
         //TODO
         if (!turning && !wassaving && !wasloading)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !mainMenu)
             {
                 mouse0pushed = true;
                 pressedGo = GetPressedGO();
@@ -372,7 +380,7 @@ public class FieldScript : MonoBehaviour
             }
 
             //обработка нажатия                                                 /*проверка, не нажали ли на GUI*/
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0) && !mainMenu)
             {
                 
                 if (!mousemoved && Input.mousePosition.y < (Screen.height - rGpanH) && !mouseRestr && mouse0pushed)

@@ -24,6 +24,7 @@ public class MenuScript : MonoBehaviour {
         menufield.Initialize(xleng, zleng);
         menufield.SetTurnSpeed(TurnTm);
         menufield.CreateRandomField();
+        menufield.mainMenu = true;
 		InGame = false;
 		rBoxS = Screen.width * BoxS;
 		rIndent = Screen.width * Indent;

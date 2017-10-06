@@ -616,6 +616,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool slmenu = false, asureSL = false;
     bool optionsmenu = false;
     bool savePattern = false;
+    bool customPlaceMenu= false;
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -668,6 +669,7 @@ public class GameManagerClassic : MonoBehaviour {
                 gpan = true;
             }
         }
+
         if (!pauseMenu && gpan)
         {
             GUI.Box(new Rect(0, 0, Screen.width, rGpanH + blackind), "", MainSkin.customStyles[0]);
@@ -675,23 +677,25 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 gamefield.scrRestraints.Add(restraints["pauseMenu"]);
                 paused = pauseMenu = true;
-                placeMenu = placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placeMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(placeR, placeC, MainSkin.customStyles[1]))
             {
                 paused = !paused;
                 placeMenu = !placeMenu;
-                placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(customR, customC, MainSkin.customStyles[1]))
             {
-                //TODO
+                paused = !paused;
+                customPlaceMenu = !customPlaceMenu;
+                placeMenu = placePatTMenu = toolsMenu = false;
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
                 paused = !paused;
                 toolsMenu = !toolsMenu;
-                placePatTMenu = placeMenu = false;
+                customPlaceMenu = placePatTMenu = placeMenu = false;
             }
         }
         if (pauseMenu)
@@ -715,7 +719,8 @@ public class GameManagerClassic : MonoBehaviour {
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
                 }
-                //TODOs
+
+                //TODO
                 if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))
                 {
                     gamefield.scrRestraints.Clear();
@@ -885,6 +890,7 @@ public class GameManagerClassic : MonoBehaviour {
             gamefield.FlipCell(item.first, item.second);
         Debug.Log("Inverted");
     }
+
     void FillBlack (List<Structers.Pair<int, int>> area)
     {
         foreach (var item in area)
@@ -892,6 +898,7 @@ public class GameManagerClassic : MonoBehaviour {
                 gamefield.FlipCell(item.first, item.second);
         Debug.Log("Filled black");
     }
+
     void FillWhite(List<Structers.Pair<int, int>> area)
     {
         foreach (var item in area)
@@ -900,8 +907,6 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
-    //TODO
-    //make save to PlayerPrefs
     void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
         //string path = "Assets/Texts/customPatterns.txt";
