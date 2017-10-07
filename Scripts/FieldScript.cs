@@ -220,6 +220,8 @@ public class FieldScript : MonoBehaviour
             {
                 //инстансим клетки
                 Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), state ? AliveRot : DeadRot) as GameObject;
+                if (state)
+                    ReActivate(i,j);
                 CellStatsR[i, j] = false;
                 CellStatsPrep[i, j] = false;
             }
