@@ -657,6 +657,7 @@ public class GameManagerClassic : MonoBehaviour {
                 }
                 AreaSelecter.GetInstance().Reset();
                 paused = selectArea = false;
+                savePattern = false;
                 gamefield.mouseRestr = false;
                 ChangeStateOutlines();
                 gpan = true;
@@ -666,6 +667,7 @@ public class GameManagerClassic : MonoBehaviour {
                 AreaSelecter.GetInstance().Reset();
                 gamefield.mouseRestr = false;
                 paused = selectArea = false;
+                savePattern = false;
                 gpan = true;
             }
         }
