@@ -64,6 +64,8 @@ public class MenuScript : MonoBehaviour {
         typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
         typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
+        xInput = new IntInputString(20, 40, 80, fieldXInR);
+        zInput = new IntInputString(20, 40, 80, fieldZInR);
     }
     
     void Continue()
@@ -85,8 +87,8 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
 		camrot.eulerAngles = StartCameraRot;
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
-        GameCamera.GetComponent<GameManagerClassic>().xleng = xInput.value;
-        GameCamera.GetComponent<GameManagerClassic>().zleng = zInput.value;
+        GameCamera.GetComponent<GameManagerClassic>().xleng =xleng;
+        GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
         switch (fType)
         {
             case typeWhite:
@@ -120,8 +122,8 @@ public class MenuScript : MonoBehaviour {
         }
     }
 
-    Structers.NumberInputString xInput = new Structers.NumberInputString(20, 40, 80);
-    Structers.NumberInputString zInput = new Structers.NumberInputString(20, 40, 80);
+    IntInputString xInput;
+    IntInputString zInput;
     bool fieldMenu = false;
     bool generalMenu = true;
     bool typeSelector = false;
@@ -162,19 +164,14 @@ public class MenuScript : MonoBehaviour {
                 GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
                 if (!typeSelector)
                 {
-                    xInput.field = GUI.TextField(fieldXInR, xInput.field, MainSkin.textField);                    
-                    /*for (int i = 0; i < xInput.Length; i++)
-                        if (!char.IsNumber(xInput[i]))
-                            xInput = xInput.Remove(i, 1);
-                    xleng = int.Parse(xInput);*/
-                    zInput.field = GUI.TextField(fieldZInR, zInput.field, MainSkin.textField);
+                    xInput.TextField(ref xleng,MainSkin.textField);
+                    zInput.TextField(ref zleng, MainSkin.textField);
                 }
                 else
                 {
-                    GUI.Box(fieldXInR, xInput.field, MainSkin.textField);
-                    GUI.Box(fieldZInR, zInput.field, MainSkin.textField);
+                    GUI.Box(fieldXInR, xInput.GetCont(), MainSkin.textField);
+                    GUI.Box(fieldZInR, zInput.GetCont(), MainSkin.textField);
                 }
-                //Debug.Log("lengs: " + xInput.value + " " + zleng);
                 if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
                 {
                     typeSelector = true;

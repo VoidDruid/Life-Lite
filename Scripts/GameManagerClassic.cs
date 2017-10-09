@@ -495,11 +495,11 @@ public class GameManagerClassic : MonoBehaviour {
         int SLSlotsHeight = (int) (Screen.height*SaveSlotsSpaceH);
         rSlotH = (int)(SLSlotsHeight / saveSlotsNum);
 
-        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * saveSlotsNum);
+        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * (saveSlotsNum-3));
         SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rSlotH);
         restraints.Add("slMenu", SLMenuRect);
 
-        SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
+        SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 3)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
         SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rSlotH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rSlotH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
         restraints.Add("slBack", SLBackRect);
 
