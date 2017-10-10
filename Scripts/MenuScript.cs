@@ -64,8 +64,8 @@ public class MenuScript : MonoBehaviour {
         typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
         typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
-        xInput = new IntInputString(20, 40, 80, fieldXInR);
-        zInput = new IntInputString(20, 40, 80, fieldZInR);
+        xInput = new IntInputString(20, 60, 300, fieldXInR);
+        zInput = new IntInputString(20, 60, 300, fieldZInR);
     }
     
     void Continue()

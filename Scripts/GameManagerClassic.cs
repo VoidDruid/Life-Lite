@@ -400,6 +400,7 @@ public class GameManagerClassic : MonoBehaviour {
         //LoadCustoms();
         ResetCamera();
         CalculateGUI();
+        readFromTime = new IntInputString(1, 2, int.MaxValue - 1, timerR);
     }
 
     //Rectы для всего GUI
@@ -525,7 +526,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool getoffset = false;
     bool dragpatt = false;
     Rect area = new Rect(0, 0, 0, 0);
-    float autoturnTime = 2;
+    int autoturnTime = 2;
     void Update()
     {
         gamefield.paused = paused;
@@ -617,7 +618,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool savePattern = false;
     bool customPlaceMenu= false;
     bool autoturn = false;
-    string readFromTime = "2";
+    IntInputString readFromTime;
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -702,11 +703,7 @@ public class GameManagerClassic : MonoBehaviour {
                 customPlaceMenu = placePatTMenu = placeMenu = false;
             }
 
-            readFromTime = GUI.TextField(timerR, readFromTime, MainSkin.textField);
-            for (int i = 0; i < readFromTime.Length; i++)
-                if (!char.IsNumber(readFromTime[i]))
-                    readFromTime = readFromTime.Remove(i, 1);
-            autoturnTime = int.Parse(readFromTime);
+            readFromTime.TextField(ref autoturnTime, MainSkin.textField);
             autoturn = GUI.Toggle(autoturnR, autoturn, " ", MainSkin.customStyles[3]);
         }
         if (pauseMenu)
