@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 
 public class FieldScript : MonoBehaviour
@@ -27,7 +28,7 @@ public class FieldScript : MonoBehaviour
     //массив реальных состояний клеток и массив состояний клеток для рассчетов
     public bool[,] CellStatsR;
     bool[,] CellStatsPrep;
-    List<Structers.Pair<int, int>> modifiedCells = new List<Structers.Pair<int, int>>();
+    HashSet<Vector2> modifiedCells = new HashSet<Vector2>();
     //поворот "живой" и "мертвой" клетки в кватернионах. так надо
     Quaternion AliveRot, DeadRot;
     public Quaternion AliveR
@@ -39,7 +40,7 @@ public class FieldScript : MonoBehaviour
         get { return DeadRot; }
     }
     //массив клеток, которые надо будет повернуть при ходе
-    Dictionary<Vector2, GameObject> ToTurn;
+    Dictionary<Vector2, GameObject> ToTurn = new Dictionary<Vector2, GameObject>();
     //сколкьо клеток надо повернуть
     int needturn;
     // происходит ли поворот клеток
@@ -92,13 +93,12 @@ public class FieldScript : MonoBehaviour
     {
         for (int i = 1; i < lengthx - 1; i++)
             for (int j = 1; j < lengthz - 1; j++)
-                modifiedCells.Add(new Structers.Pair<int, int>(i, j));
+                modifiedCells.Add(new Vector2(i, j));
     }
     
     public void SetSize(int x, int z)
     {
         DestroyField();
-        PrepareArrays();
         Initialize(x, z);
         CreateEmptyField(false);
     }
@@ -106,13 +106,6 @@ public class FieldScript : MonoBehaviour
     public void SetTurnSpeed(float TurnTm)
     {
         TurnSpeed = 180 / TurnTm;
-    }
-    void PrepareArrays()
-    {
-        //инициализируем массивы
-        Cells = new GameObject[lengthx, lengthz];
-        CellStatsR = new bool[lengthx, lengthz];
-        CellStatsPrep = new bool[lengthx, lengthz];
     }
 
     public void DestroyField ()
@@ -137,74 +130,90 @@ public class FieldScript : MonoBehaviour
         lengthx = xleng + 2;
         lengthz = zleng + 2;
         PrepareArrays();
-        ToTurn = new Dictionary<Vector2, GameObject>();
         cam = this.GetComponent<Camera>();
+    }
+
+    void PrepareArrays()
+    {
+        //инициализируем массивы
+        Cells = new GameObject[lengthx, lengthz];
+        CellStatsR = new bool[lengthx, lengthz];
+        CellStatsPrep = new bool[lengthx, lengthz];
     }
 
     public void Turn()
     {
-        Debug.Log("moidfied at start of turn calcs: " + modifiedCells.Count);
-        ToTurn = new Dictionary<Vector2, GameObject>();
-        foreach (var coor in modifiedCells)
+        if (modifiedCells.Count != 0)
         {
-            int i = coor.first;
-            int j = coor.second;
-            for (int x = i - 1; x <= i + 1; x++)
+            ToTurn.Clear();
+            Debug.Log("moidfied at start of turn calcs: " + modifiedCells.Count);
+            foreach (var coor in modifiedCells)
             {
-                //МАЛЕНЬКИЙ КОСТЫЛЬ
-                if (x < 1)
-                    x = 1;
-                if (x > lengthx - 2)
-                    x = lengthx - 2;
-                for (int z = j - 1; z <= j + 1; z++)
+                int i = (int)coor.x;
+                int j = (int)coor.y;
+                for (int x = i - 1; x <= i + 1; x++)
                 {
                     //МАЛЕНЬКИЙ КОСТЫЛЬ
-                    if (z < 1)
-                        z = 1;
-                    if (z > lengthz - 2)
-                        z = lengthz - 2;
-
-                    int calives = 0;
-                    if (CellStatsR[x + 1, z] == true) calives++;
-                    if (CellStatsR[x + 1, z + 1] == true) calives++;
-                    if (CellStatsR[x, z + 1] == true) calives++;
-                    if (CellStatsR[x - 1, z] == true) calives++;
-                    if (CellStatsR[x, z - 1] == true) calives++;
-                    if (CellStatsR[x - 1, z - 1] == true) calives++;
-                    if (CellStatsR[x - 1, z + 1] == true) calives++;
-                    if (CellStatsR[x + 1, z - 1] == true) calives++;
-
-
-                    if (CellStatsR[x, z] == false && calives == 3)
+                    if (x < 1)
+                        x = 1;
+                    if (x > lengthx - 2)
+                        x = lengthx - 2;
+                    for (int z = j - 1; z <= j + 1; z++)
                     {
-                        CellStatsPrep[x, z] = true;
-                        ToTurn[new Vector2(x, z)] = Cells[x, z];
+                        //МАЛЕНЬКИЙ КОСТЫЛЬ
+                        if (z < 1)
+                            z = 1;
+                        if (z > lengthz - 2)
+                            z = lengthz - 2;
+
+                        int calives = 0;
+                        if (CellStatsR[x + 1, z] == true) calives++;
+                        if (CellStatsR[x + 1, z + 1] == true) calives++;
+                        if (CellStatsR[x, z + 1] == true) calives++;
+                        if (CellStatsR[x - 1, z] == true) calives++;
+                        if (CellStatsR[x, z - 1] == true) calives++;
+                        if (CellStatsR[x - 1, z - 1] == true) calives++;
+                        if (CellStatsR[x - 1, z + 1] == true) calives++;
+                        if (CellStatsR[x + 1, z - 1] == true) calives++;
+
+                        if (CellStatsR[x, z] == false && calives == 3)
+                        {
+                            CellStatsPrep[x, z] = true;
+                            ToTurn[new Vector2(x, z)] = Cells[x, z];
+                        }
+                        else
+                        {
+                            if (CellStatsR[x, z] == true && (calives == 2 || calives == 3))
+                            {
+                                CellStatsPrep[x, z] = true;
+                            }
+                            else
+                            {
+                                if (CellStatsR[x, z] == true && !(calives == 2 || calives == 3))
+                                {
+                                    CellStatsPrep[x, z] = false;
+                                    ToTurn[new Vector2(x, z)] = Cells[x, z];
+                                }
+                            }
+                        }
+                        if (z == lengthz - 2)
+                            break;
+                        calives = 0;
                     }
-
-                    if (CellStatsR[x, z] == true && (calives == 2 || calives == 3))
-                        CellStatsPrep[x, z] = true;
-
-                    if (CellStatsR[x, z] == true && !(calives == 2 || calives == 3))
-                    {
-                        CellStatsPrep[x, z] = false;
-                        ToTurn[new Vector2(x, z)] = Cells[x, z];
-
-                    }
-                    if (z == lengthz - 2)
+                    if (x == lengthx - 2)
                         break;
-                    calives = 0;
                 }
-                if (x == lengthx - 2)
-                    break;
             }
-        }
 
-        foreach (var go in ToTurn)
-            SetFullyActive((int)go.Key.x, (int)go.Key.y);
-        modifiedCells.Clear();
-        turning = true;
-        CellStatsR = CellStatsPrep;
-        CellStatsPrep = new bool[lengthx, lengthz];
+            foreach (var go in ToTurn)
+                SetFullyActive((int)go.Key.x, (int)go.Key.y);
+            turning = true;
+            //БАГ ТУТ
+            foreach (var pos in ToTurn)
+                CellStatsR[(int)pos.Key.x, (int)pos.Key.y] = CellStatsPrep[(int)pos.Key.x, (int)pos.Key.y];
+            CellStatsPrep = new bool[lengthx, lengthz];
+            modifiedCells.Clear();
+        }
         Debug.Log("Turn prepared");
     }
 
@@ -220,9 +229,13 @@ public class FieldScript : MonoBehaviour
             {
                 //инстансим клетки
                 Cells[i, j] = Instantiate(Cell, new Vector3(i, 0, j), state ? AliveRot : DeadRot) as GameObject;
-                CellStatsR[i, j] = false;
-                CellStatsPrep[i, j] = false;
+                if (state)
+                    ReActivate(i,j);
+                CellStatsR[i, j] = state;
+                CellStatsPrep[i, j] = state;
             }
+        if (state)
+            SetAllModefied();
         PlaceBorders();
     }
 
@@ -234,7 +247,7 @@ public class FieldScript : MonoBehaviour
         for (int i = 1; i < lengthx - 1; i++)
             for (int j = 1; j < lengthz - 1; j++)
             {
-                modifiedCells.Add(new Structers.Pair<int, int>(i, j));//WORKS?
+                //modifiedCells.Add(new Structers.Pair<int, int>(i, j));//WORKS?
                 if (Random.Range(0, 2) == 1) ran = true;
                 else ran = false;
                 //инстансим клетки
@@ -248,6 +261,7 @@ public class FieldScript : MonoBehaviour
                 CellStatsR[i, j] = ran;     
                 CellStatsPrep[i, j] = ran;
             }
+        SetAllModefied();
         PlaceBorders();
     }
 
@@ -314,12 +328,11 @@ public class FieldScript : MonoBehaviour
 
     public void FlipCell(int i, int j)
     {
-        modifiedCells.Add(new Structers.Pair<int, int>(i, j));
+        modifiedCells.Add(new Vector2(i, j));
         ReActivate(i, j);
         //Смена состояния и поворота клетки
         if (CellStatsR[i, j] == true)
         {
-            
             CellStatsR[i, j] = false;
             Cells[i,j].transform.rotation = DeadRot;
         }
@@ -395,8 +408,8 @@ public class FieldScript : MonoBehaviour
                         if (pressedGo.tag == "Cell" && !paused)
                         {
                             int pgoX, pgoZ;
-                            pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                            pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                            pgoX = (int)pressedGo.transform.position.x;
+                            pgoZ = (int)pressedGo.transform.position.z;
                             FlipCell(pgoX, pgoZ);
                         }
                     }
@@ -434,10 +447,10 @@ public class FieldScript : MonoBehaviour
                 deltaAng = 0;
                 foreach (var data in ToTurn)
                 {
-                    modifiedCells.Add(new Structers.Pair<int, int>((int)data.Key.x,(int)data.Key.y));//сложна
+                    modifiedCells.Add(data.Key);//сложна
                     int crx, crz;
-                    crx = Mathf.RoundToInt(data.Value.transform.position.x);
-                    crz = Mathf.RoundToInt(data.Value.transform.position.z);
+                    crx = (int)data.Value.transform.position.x;
+                    crz = (int)data.Value.transform.position.z;
                     if (CellStatsR[crx, crz])
                     {
                         data.Value.transform.rotation = AliveRot;
@@ -449,6 +462,7 @@ public class FieldScript : MonoBehaviour
                         Cells[crx, crz].transform.GetChild(1).gameObject.SetActive(false);
                     }
                 }
+                ToTurn.Clear();
             }
         }
     }

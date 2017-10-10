@@ -41,7 +41,7 @@ public class MenuScript : MonoBehaviour {
     private float fieldSettingsElemRealW, fieldSettingsElemRealH;
     float halfElemRealWL, halfElemRealWR;
     float halfElemRightPos;
-    private Rect fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
+    private Rect fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
     private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR, typeSelecterBoxR;
     const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
     void GUICalc()
@@ -51,12 +51,12 @@ public class MenuScript : MonoBehaviour {
         fieldMenuBoxR = new Rect((Screen.width - fieldSettingsRealW) / 2, (Screen.height - fieldSettigsRealH) / 2, fieldSettingsRealW, fieldSettigsRealH);
         fieldSettingsElemRealH = (fieldSettigsRealH - blackind * 4) / 3;
         fieldSettingsElemRealW = (fieldSettingsRealW - blackind * 2);
-        //fieldMenuBoxR, fieldXInR, fieldYInR, fieldTypeSelectR, fieldConfirmR
+        //fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR
         halfElemRealWL = fieldSettingsElemRealW / 2 - blackind;
         halfElemRealWR = fieldSettingsElemRealW / 2;
         fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, halfElemRealWL, fieldSettingsElemRealH);
         halfElemRightPos = fieldXInR.x + fieldXInR.width + blackind;
-        fieldYInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        fieldZInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
         fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
         fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
         fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
@@ -64,6 +64,8 @@ public class MenuScript : MonoBehaviour {
         typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
         typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y+blackind+typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
+        xInput = new IntInputString(20, 60, 300, fieldXInR);
+        zInput = new IntInputString(20, 60, 300, fieldZInR);
     }
     
     void Continue()
@@ -85,7 +87,7 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
 		camrot.eulerAngles = StartCameraRot;
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
-        GameCamera.GetComponent<GameManagerClassic>().xleng = xleng;
+        GameCamera.GetComponent<GameManagerClassic>().xleng =xleng;
         GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
         switch (fType)
         {
@@ -119,8 +121,9 @@ public class MenuScript : MonoBehaviour {
             timer = 0;
         }
     }
-    string xInput = "30";
-    string yInput = "30";
+
+    IntInputString xInput;
+    IntInputString zInput;
     bool fieldMenu = false;
     bool generalMenu = true;
     bool typeSelector = false;
@@ -129,7 +132,7 @@ public class MenuScript : MonoBehaviour {
     void OnGUI() {
         if (!InGame)
         {
-            
+            GUI.skin.settings.cursorColor = MainSkin.settings.cursorColor;
             if (generalMenu)
             {
                 //DEBUG START
@@ -161,23 +164,14 @@ public class MenuScript : MonoBehaviour {
                 GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
                 if (!typeSelector)
                 {
-                    xInput = GUI.TextField(fieldXInR, xInput, MainSkin.textField);
-                    for (int i = 0; i < xInput.Length; i++)
-                        if (!char.IsNumber(xInput[i]))
-                            xInput = xInput.Remove(i, 1);
-                    xleng = int.Parse(xInput);
-                    yInput = GUI.TextField(fieldYInR, yInput, MainSkin.textField);
-                    for (int i = 0; i < yInput.Length; i++)
-                        if (!char.IsNumber(yInput[i]))
-                            yInput = yInput.Remove(i, 1);
-                    zleng = int.Parse(yInput);
+                    xInput.TextField(ref xleng,MainSkin.textField);
+                    zInput.TextField(ref zleng, MainSkin.textField);
                 }
                 else
                 {
-                    GUI.Box(fieldXInR, xInput, MainSkin.textField);
-                    GUI.Box(fieldYInR, yInput, MainSkin.textField);
+                    GUI.Box(fieldXInR, xInput.GetCont(), MainSkin.textField);
+                    GUI.Box(fieldZInR, zInput.GetCont(), MainSkin.textField);
                 }
-                //Debug.Log("lengs: " + xleng + " " + zleng);
                 if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
                 {
                     typeSelector = true;
@@ -192,8 +186,8 @@ public class MenuScript : MonoBehaviour {
                     typeSelecterC.text = typeSelectT;
                     generalMenu = true;
                     fieldMenu = false;
-                    xInput = "30";
-                    yInput = "30";
+                    xInput.Reset();
+                    zInput.Reset();
                 }
                 if (typeSelector)
                 {

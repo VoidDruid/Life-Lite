@@ -400,6 +400,7 @@ public class GameManagerClassic : MonoBehaviour {
         //LoadCustoms();
         ResetCamera();
         CalculateGUI();
+        readFromTime = new IntInputString(1, 2, int.MaxValue - 1, timerR);
     }
 
     //Rectы для всего GUI
@@ -495,11 +496,11 @@ public class GameManagerClassic : MonoBehaviour {
         int SLSlotsHeight = (int) (Screen.height*SaveSlotsSpaceH);
         rSlotH = (int)(SLSlotsHeight / saveSlotsNum);
 
-        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * saveSlotsNum);
+        SLMenuRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2, pauseMenuR.width, SLSlotsHeight + blackind * (saveSlotsNum-3));
         SLSlotRect = new Rect(SLMenuRect.x + blackind, SLMenuRect.y + blackind, continueR.width, rSlotH);
         restraints.Add("slMenu", SLMenuRect);
 
-        SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
+        SLBackRect = new Rect(Screen.width / 4, (Screen.height - SLSlotsHeight - rSlotH - continueR.height - blackind * (saveSlotsNum + 3)) / 2 + SLSlotsHeight + rSlotH + blackind * (saveSlotsNum + 1), pauseMenuR.width, continueR.height + blackind);
         SLBackButtRect = new Rect(Screen.width / 4 + blackind, (Screen.height - rSlotH * (saveSlotsNum + 1) - continueR.height - blackind * (saveSlotsNum + 1)) / 2 + rSlotH * (saveSlotsNum + 1) + blackind * (saveSlotsNum + 2), continueR.width, continueR.height);
         restraints.Add("slBack", SLBackRect);
 
@@ -525,7 +526,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool getoffset = false;
     bool dragpatt = false;
     Rect area = new Rect(0, 0, 0, 0);
-    float autoturnTime = 2;
+    int autoturnTime = 2;
     void Update()
     {
         gamefield.paused = paused;
@@ -617,7 +618,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool savePattern = false;
     bool customPlaceMenu= false;
     bool autoturn = false;
-    string readFromTime = "2";
+    IntInputString readFromTime;
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
     Rect scrollViewPos;
@@ -657,6 +658,7 @@ public class GameManagerClassic : MonoBehaviour {
                 }
                 AreaSelecter.GetInstance().Reset();
                 paused = selectArea = false;
+                savePattern = false;
                 gamefield.mouseRestr = false;
                 ChangeStateOutlines();
                 gpan = true;
@@ -666,6 +668,7 @@ public class GameManagerClassic : MonoBehaviour {
                 AreaSelecter.GetInstance().Reset();
                 gamefield.mouseRestr = false;
                 paused = selectArea = false;
+                savePattern = false;
                 gpan = true;
             }
         }
@@ -700,11 +703,7 @@ public class GameManagerClassic : MonoBehaviour {
                 customPlaceMenu = placePatTMenu = placeMenu = false;
             }
 
-            readFromTime = GUI.TextField(timerR, readFromTime, MainSkin.textField);
-            for (int i = 0; i < readFromTime.Length; i++)
-                if (!char.IsNumber(readFromTime[i]))
-                    readFromTime = readFromTime.Remove(i, 1);
-            autoturnTime = int.Parse(readFromTime);
+            readFromTime.TextField(ref autoturnTime, MainSkin.textField);
             autoturn = GUI.Toggle(autoturnR, autoturn, " ", MainSkin.customStyles[3]);
         }
         if (pauseMenu)
