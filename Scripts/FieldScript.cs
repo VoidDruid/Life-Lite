@@ -402,10 +402,10 @@ public class FieldScript : MonoBehaviour
                 if (!mousemoved && Input.mousePosition.y < (Screen.height - rGpanH) && !mouseRestr && mouse0pushed)
                 {
                     mouse0pushed = false;
-                    if (pressedGo != null)
+                    if (pressedGo != null && !autoturn && !paused)
                     {
                         //если это клетка
-                        if (pressedGo.tag == "Cell" && !paused)
+                        if (pressedGo.tag == "Cell" /*&& !paused*/)
                         {
                             int pgoX, pgoZ;
                             pgoX = (int)pressedGo.transform.position.x;
