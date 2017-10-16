@@ -1020,13 +1020,16 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = false;
                 //FIXME
                 //УЖАСНЫЙ КОСТЫЛЬ!
-                pressedGo = gamefield.GetPressedGO();
-                if (pressedGo != null && pressedGo.tag == "Cell")
+                if (drawType == DrawType.black)
                 {
-                    int pgoX, pgoZ;
-                    pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                    pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                    gamefield.FlipCell(pgoX, pgoZ);
+                    pressedGo = gamefield.GetPressedGO();
+                    if (pressedGo != null && pressedGo.tag == "Cell")
+                    {
+                        int pgoX, pgoZ;
+                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                        gamefield.FlipCell(pgoX, pgoZ);
+                    }
                 }
                 //конец костыля
             }
