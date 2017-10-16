@@ -404,11 +404,13 @@ public class GameManagerClassic : MonoBehaviour {
     }
 
     //Rectы для всего GUI
-    private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR;
+    private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR, drawR;
     private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
+    private Rect drawWhiteR, drawBlackR, drawInvertR;
     private Rect tickR, crossR;
+    private Rect endDrawR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
     
 
@@ -418,14 +420,16 @@ public class GameManagerClassic : MonoBehaviour {
     //длина "черного" отступа
     public int blackind;
     //контент для GUI
-    public GUIContent pauseC, placeC, customC, toolsC, autoturnC;
+    public GUIContent pauseC, placeC, customC, toolsC, autoturnC, drawC;
     public GUIContent continueC, exitC, saveC, loadC, optionsC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
+    public GUIContent drawWhiteC, drawBlackC, drawInvertC;
     public GUIContent tickC, crossC;
     public GUIContent SLConfC;
     //какую часть ширинvы экрана занимает каждый элемент GUI
     public float pauseW, placeW, customW, toolsW, timerW, autoturnW;
+    private float drawW;
     public float gpanH, placeBoxHW;
     public float pauseMenuW, pauseMenuH;
     public float SaveSlotsSpaceH;
@@ -436,6 +440,7 @@ public class GameManagerClassic : MonoBehaviour {
     //реальная ширина элементов GUI в пикселях
     private static int rGpanH;
     private int rPauseW, rPlaceW, rCustomW, rToolsW, rTimerW, rAutoturnW;
+    private int rDrawW;
     private int rPlaceBoxHW;
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
@@ -445,13 +450,14 @@ public class GameManagerClassic : MonoBehaviour {
     Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
     void CalculateGUI()
     {
+        drawW = 1 - pauseW - placeW - customW - toolsW - timerW - autoturnW;
         rGpanH = Mathf.RoundToInt(Screen.height * gpanH) - blackind;
         gamefield.rGpanH = rGpanH;
         rPauseW = Mathf.RoundToInt(Screen.width * pauseW) - blackind * 2;
         rPlaceW = Mathf.RoundToInt(Screen.width * placeW) - blackind;
         rCustomW = Mathf.RoundToInt(Screen.width * customW) - blackind;
         rToolsW = Mathf.RoundToInt(Screen.width * toolsW) - blackind;
-
+        rDrawW = Mathf.RoundToInt(Screen.width * drawW) - blackind;
         rPlaceBoxHW = Mathf.RoundToInt(Screen.width * placeBoxHW);
 
         rPauseMenuW = Mathf.RoundToInt(Screen.width * pauseMenuW) - blackind * 2;
@@ -463,6 +469,7 @@ public class GameManagerClassic : MonoBehaviour {
         placeR = new Rect(rPauseW + blackind * 2, 0, rPlaceW, rGpanH);
         customR = new Rect(rPauseW + rPlaceW + blackind * 3, 0, rCustomW, rGpanH);
         toolsR = new Rect(rPauseW + rPlaceW + rCustomW + blackind * 4, 0, rToolsW, rGpanH);
+        drawR = new Rect(rPauseW + rPlaceW + rCustomW + rToolsW + blackind * 5, 0, rDrawW, rGpanH);
 
         movPatR = new Rect(rPauseW + blackind * 2, rGpanH + blackind, rPlaceW, rGpanH);
         periPatR = new Rect(rPauseW + blackind * 2, (rGpanH + blackind)*2, rPlaceW, rGpanH);
@@ -474,8 +481,15 @@ public class GameManagerClassic : MonoBehaviour {
         invertR = new Rect(rPauseW + rPlaceW + rCustomW + blackind * 4, (rGpanH + blackind)*3, rToolsW, rGpanH);
         savePattR = new Rect(rPauseW + rPlaceW + rCustomW + blackind * 4, (rGpanH + blackind)*4, rToolsW, rGpanH);
 
+        drawWhiteR = new Rect(drawR.x, fillWhiteR.y, drawR.width, rGpanH);
+        drawBlackR = new Rect(drawR.x, fillBlackR.y, drawR.width, rGpanH);
+        drawInvertR = new Rect(drawR.x, invertR.y, drawR.width, rGpanH);
+
         tickR = new Rect(Screen.width / 2 - Screen.width * TickCrossAreaSelect, 0, Screen.width * TickCrossAreaSelect, rGpanH);
         crossR = new Rect(Screen.width / 2 +blackind, 0, Screen.width * TickCrossAreaSelect, rGpanH);
+        endDrawR = tickR;
+        endDrawR.x = Screen.width - endDrawR.width;
+        endDrawR.y = Screen.height - endDrawR.height;
 
         int pauseMenuLeft, pauseMenuTop;
         pauseMenuTop = Mathf.RoundToInt((Screen.height - rPauseMenuH) / 2);
@@ -525,6 +539,7 @@ public class GameManagerClassic : MonoBehaviour {
     GameObject pressedGo;
     bool getoffset = false;
     bool dragpatt = false;
+    bool drawGoes = false;
     Rect area = new Rect(0, 0, 0, 0);
     int autoturnTime = 2;
     void Update()
@@ -533,6 +548,7 @@ public class GameManagerClassic : MonoBehaviour {
         gamefield.mouseRestr = false;
         gamefield.autoturn = autoturn;
         gamefield.autoturnTime = autoturnTime;
+        gamefield.drawing = drawing;
         if (placing)
         {
             if (Input.GetMouseButtonDown(0))
@@ -601,7 +617,65 @@ public class GameManagerClassic : MonoBehaviour {
             gamefield.mouseRestr = true;
             AreaSelecter.GetInstance().SetArea();
         }
+
+        if(drawing)
+        {
+            int pgoX = 0;
+            int pgoZ = 0;
+            if (Input.GetMouseButtonDown(0))
+            {
+                drawGoes = true;
+                pressedGo = gamefield.GetPressedGO();
+                pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+            }
+            if (Input.GetMouseButtonUp(0))
+                drawGoes = false;
+            if (drawGoes)
+            {
+                if (pressedGo != null)
+                {
+                    
+                    switch (drawType)
+                    {
+                        case DrawType.black:
+                            pressedGo = gamefield.GetPressedGO();
+                            pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                            pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                            if (gamefield.CellStatsR[pgoX,pgoZ] == false)
+                                gamefield.FlipCell(pgoX, pgoZ);
+                            break;
+                        case DrawType.white:
+                            pressedGo = gamefield.GetPressedGO();
+                            pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                            pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                            if (gamefield.CellStatsR[pgoX, pgoZ] == true)
+                                gamefield.FlipCell(pgoX, pgoZ);
+                            break;
+                        case DrawType.invert:
+                            GameObject probeGO = gamefield.GetPressedGO();
+                            if (probeGO != null)
+                                if (probeGO != pressedGo)
+                                {
+                                    pressedGo = probeGO;
+                                    pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                                    pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                                    gamefield.FlipCell(pgoX, pgoZ);
+                                }
+                            break;
+                    }
+                    
+                }
+            }
+        }
         gamefield.PCalculations();
+    }
+
+    enum DrawType
+    {
+        white = 0,
+        black,
+        invert
     }
 
     //а ну ка, опробуем делегаты
@@ -612,12 +686,15 @@ public class GameManagerClassic : MonoBehaviour {
     bool paused = false;
     bool pauseMenu = false, placeMenu = false, placePatTMenu = false;
     bool toolsMenu = false;
+    bool drawMenu = false;
     bool placing = false;
     bool slmenu = false, asureSL = false;
     bool optionsmenu = false;
     bool savePattern = false;
     bool customPlaceMenu= false;
     bool autoturn = false;
+    bool drawing = false;
+    DrawType drawType = DrawType.black;
     IntInputString readFromTime;
     PatternNums placePatTNum;
     Vector2 scrollPosition = Vector2.zero;
@@ -680,29 +757,33 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 gamefield.scrRestraints.Add(restraints["pauseMenu"]);
                 paused = pauseMenu = true;
-                customPlaceMenu = placeMenu = placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placeMenu = placePatTMenu = toolsMenu = drawMenu = false;
             }
             if (GUI.Button(placeR, placeC, MainSkin.customStyles[1]))
             {
                 paused = !placeMenu;
                 placeMenu = !placeMenu;
-                customPlaceMenu = placePatTMenu = toolsMenu = false;
+                customPlaceMenu = placePatTMenu = toolsMenu = drawMenu = false;
             }
             if (GUI.Button(customR, customC, MainSkin.customStyles[1]))
             {
                 paused = !customPlaceMenu;
                 customPlaceMenu = !customPlaceMenu;
-                placeMenu = placePatTMenu = toolsMenu = false;
+                placeMenu = placePatTMenu = toolsMenu = drawMenu = false;
                 scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth, Screen.height - rCustomPlaceBoxH - blackind);
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
-                
                 paused = !toolsMenu;
                 toolsMenu = !toolsMenu;
-                customPlaceMenu = placePatTMenu = placeMenu = false;
+                customPlaceMenu = placePatTMenu = placeMenu = drawMenu = false;
             }
-
+            if (GUI.Button(drawR,drawC, MainSkin.customStyles[1]))
+            {
+                paused = !drawMenu;
+                drawMenu = !drawMenu;
+                customPlaceMenu = placePatTMenu = placeMenu = toolsMenu = false;
+            }
             readFromTime.TextField(ref autoturnTime, MainSkin.textField);
             autoturn = GUI.Toggle(autoturnR, autoturn, " ", MainSkin.customStyles[3]);
         }
@@ -903,6 +984,54 @@ public class GameManagerClassic : MonoBehaviour {
                 selectArea = true;
                 ChangeStateOutlines();
                 savePattern = true;
+            }
+        }
+        if (drawMenu)
+        {
+            GUI.Box(new Rect(drawR.x - blackind, rGpanH + blackind, drawR.width + blackind * 2, drawWhiteR.height * 3 + blackind * 3), " ", MainSkin.customStyles[0]);
+            if (GUI.Button(drawWhiteR, drawWhiteC, MainSkin.customStyles[1]))
+            {
+                drawType = DrawType.white;
+                drawing = true;
+                drawMenu = false;
+                gpan = false;
+            }
+            if (GUI.Button(drawBlackR, drawBlackC, MainSkin.customStyles[1]))
+            {
+                drawType = DrawType.black;
+                drawing = true;
+                drawMenu = false;
+                gpan = false;
+            }
+            if (GUI.Button(drawInvertR, drawInvertC, MainSkin.customStyles[1]))
+            {
+                drawType = DrawType.invert;
+                drawing = true;
+                drawMenu = false;
+                gpan = false;
+            }
+        }
+        if (drawing)
+        {
+            if (GUI.Button(endDrawR,crossC, MainSkin.customStyles[1]))
+            {
+                gpan = true;
+                drawing = false;
+                paused = false;
+                //FIXME
+                //УЖАСНЫЙ КОСТЫЛЬ!
+                if (drawType == DrawType.black)
+                {
+                    pressedGo = gamefield.GetPressedGO();
+                    if (pressedGo != null && pressedGo.tag == "Cell")
+                    {
+                        int pgoX, pgoZ;
+                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                        gamefield.FlipCell(pgoX, pgoZ);
+                    }
+                }
+                //конец костыля
             }
         }
     }

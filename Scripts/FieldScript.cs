@@ -11,6 +11,7 @@ public class FieldScript : MonoBehaviour
 
     GameManagerClassic manager;
 
+    public bool drawing;
     public bool autoturn;
     public float autoturnTime;
     public float rGpanH;
@@ -361,9 +362,9 @@ public class FieldScript : MonoBehaviour
             }
         }      
         //TODO
-        if (!turning/* && !wassaving && !wasloading*/)
+        if (true /*!turning && !wassaving && !wasloading*/)
         {
-            if (Input.GetMouseButtonDown(0) && !mainMenu)
+            if (Input.GetMouseButtonDown(0) && !mainMenu && !drawing)
             {
                 mouse0pushed = true;
                 pressedGo = GetPressedGO();
@@ -396,16 +397,15 @@ public class FieldScript : MonoBehaviour
             }
 
             //обработка нажатия                                                 /*проверка, не нажали ли на GUI*/
-            if (Input.GetMouseButtonUp(0) && !mainMenu)
+            if (Input.GetMouseButtonUp(0) && !mainMenu && !turning)
             {
-                
                 if (!mousemoved && Input.mousePosition.y < (Screen.height - rGpanH) && !mouseRestr && mouse0pushed)
                 {
                     mouse0pushed = false;
-                    if (pressedGo != null)
+                    if (pressedGo != null && !autoturn && !paused)
                     {
                         //если это клетка
-                        if (pressedGo.tag == "Cell" && !paused)
+                        if (pressedGo.tag == "Cell" /*&& !paused*/)
                         {
                             int pgoX, pgoZ;
                             pgoX = (int)pressedGo.transform.position.x;
@@ -418,9 +418,10 @@ public class FieldScript : MonoBehaviour
                 getoffset = false;
                 mousemoved = false;
             }
-            if (Input.GetMouseButtonDown(2) && !paused && !autoturn)
+            if (Input.GetMouseButtonDown(2) && !paused && !autoturn && !drawing && !turning)
                 Turn();
         }
+
         if (autoturn && !paused && !turning)
         {
             timer += Time.deltaTime;
