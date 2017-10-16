@@ -362,7 +362,7 @@ public class FieldScript : MonoBehaviour
             }
         }      
         //TODO
-        if (!turning/* && !wassaving && !wasloading*/)
+        if (true /*!turning && !wassaving && !wasloading*/)
         {
             if (Input.GetMouseButtonDown(0) && !mainMenu && !drawing)
             {
@@ -397,7 +397,7 @@ public class FieldScript : MonoBehaviour
             }
 
             //обработка нажатия                                                 /*проверка, не нажали ли на GUI*/
-            if (Input.GetMouseButtonUp(0) && !mainMenu)
+            if (Input.GetMouseButtonUp(0) && !mainMenu && !turning)
             {
                 if (!mousemoved && Input.mousePosition.y < (Screen.height - rGpanH) && !mouseRestr && mouse0pushed)
                 {
@@ -418,9 +418,10 @@ public class FieldScript : MonoBehaviour
                 getoffset = false;
                 mousemoved = false;
             }
-            if (Input.GetMouseButtonDown(2) && !paused && !autoturn && !drawing)
+            if (Input.GetMouseButtonDown(2) && !paused && !autoturn && !drawing && !turning)
                 Turn();
         }
+
         if (autoturn && !paused && !turning)
         {
             timer += Time.deltaTime;
