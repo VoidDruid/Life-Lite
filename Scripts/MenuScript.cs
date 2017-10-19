@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Advertisements;
 using System.Collections;
 using System.Linq;
 
@@ -16,8 +17,14 @@ public class MenuScript : MonoBehaviour {
 	private GameObject GameCamera;
     FieldScript menufield;
 
+    void Awake()
+    {
+        Advertisement.Initialize("1578434", true);
+    }
+
 	// Use this for initialization
 	void Start () {
+        
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         Debug.Log("MENU START");
         menufield = this.GetComponent<FieldScript>();
@@ -31,7 +38,18 @@ public class MenuScript : MonoBehaviour {
 		rExitS = Screen.width * ExitS;
         this.transform.position = new Vector3(xleng / 2, 7, 3);
         GUICalc();
+
+        ShowAd();
 	}
+
+    public void ShowAd()
+    {
+        if (Advertisement.IsReady())
+        {
+            Debug.Log("ad");
+            Advertisement.Show();
+        }
+    }
 
     public int blackind = 1;
     public float fieldSettingsW;

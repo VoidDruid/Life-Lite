@@ -309,15 +309,16 @@ public class GameManagerClassic : MonoBehaviour {
             for (int i = 0; i < customPatCount; i++)
             {
                 Pattern custom = new Pattern();
-                string name = "custom " + i;
+                string nameGet = "custom " + i;
+                string name = PlayerPrefs.GetString(customPatsBaseKey + "_name_" + i);
                 custom.name = name;
-                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + name);
+                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + nameGet);
                 List<List<bool>> def = new List<List<bool>>();
                 for (int j = 0; j < size; j++)
                 {
                     //ОЧЕНЬ КРИВО
                     //FIXME
-                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + j);
+                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + nameGet + customPatsLanePfx + j);
                     List<bool> tmpL = new List<bool>();
                     tmpL.AddRange(tmp);
                     def.Add(tmpL);
@@ -408,6 +409,8 @@ public class GameManagerClassic : MonoBehaviour {
     private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
+    private Rect patSaveNameR, patSaveNameBoxR;
+    private Rect patSaveNameConfR, patSaveNameConfBoxR;
     private Rect drawWhiteR, drawBlackR, drawInvertR;
     private Rect tickR, crossR;
     private Rect endDrawR;
@@ -533,6 +536,12 @@ public class GameManagerClassic : MonoBehaviour {
         autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
         rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
         timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
+
+        int widPatname = rPauseMenuW * 2;
+        patSaveNameR = new Rect((Screen.width - widPatname) / 2, (Screen.height - rPauseMenuElemH) / 2, widPatname, rPauseMenuElemH);
+        patSaveNameBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind*2, rPauseMenuElemH + blackind * 2);
+        patSaveNameConfR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width, patSaveNameR.y, tickR.width, rPauseMenuElemH);
+        patSaveNameConfBoxR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width - blackind, patSaveNameR.y - blackind, tickR.width + blackind*2, rPauseMenuElemH + blackind * 2);
     }
 
 
@@ -694,6 +703,8 @@ public class GameManagerClassic : MonoBehaviour {
     bool customPlaceMenu= false;
     bool autoturn = false;
     bool drawing = false;
+    bool savingCustomName = false;
+    string custName = "Enter name";
     DrawType drawType = DrawType.black;
     IntInputString readFromTime;
     PatternNums placePatTNum;
@@ -720,33 +731,62 @@ public class GameManagerClassic : MonoBehaviour {
     {
         if (selectArea)
         {
-            if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
-                Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
+            if (!savingCustomName)
+            {
+                if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
+                    Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2 - AreaSelecter.GetInstance().screenCorner1), Color.blue);
 
-            GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
-            if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
-            {
-                if (!savePattern)
-                    ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
-                else
+                GUI.Box(new Rect(tickR.x - blackind, 0, tickR.width * 2 + blackind * 3, rGpanH + blackind), "", MainSkin.customStyles[0]);
+                if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
                 {
-                    SavePattern(AreaSelecter.GetInstance().GetAreaCorners());
-                    savePattern = true;
+                    if (!savePattern)
+                    {
+                        ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
+                        paused = selectArea = false;
+                        gpan = true;
+                        gamefield.mouseRestr = false;
+                    }
+                    else
+                    {
+                        SavePattern(AreaSelecter.GetInstance().GetAreaCorners());
+                        savingCustomName = true;
+                    }
+                    AreaSelecter.GetInstance().Reset();
+                    ChangeStateOutlines();
                 }
-                AreaSelecter.GetInstance().Reset();
-                paused = selectArea = false;
-                savePattern = false;
-                gamefield.mouseRestr = false;
-                ChangeStateOutlines();
-                gpan = true;
+                if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
+                {
+                    AreaSelecter.GetInstance().Reset();
+                    gamefield.mouseRestr = false;
+                    paused = selectArea = false;
+                    savePattern = false;
+                    gpan = true;
+                }
             }
-            if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
+            if (savingCustomName)
             {
-                AreaSelecter.GetInstance().Reset();
-                gamefield.mouseRestr = false;
-                paused = selectArea = false;
-                savePattern = false;
-                gpan = true;
+                GUI.Box(patSaveNameBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(patSaveNameConfBoxR, "", MainSkin.customStyles[0]);
+                custName = GUI.TextField(patSaveNameR, custName, MainSkin.customStyles[1]);
+                if (GUI.Button(patSaveNameConfR, tickC, MainSkin.customStyles[1]))
+                {
+                    //FIXME
+                    //УЖАСНЫЙ КОСТЫЛЬ!
+                    pressedGo = gamefield.GetPressedGO();
+                    if (pressedGo != null)
+                    {
+                        int pgoX, pgoZ;
+                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+                        gamefield.FlipCell(pgoX, pgoZ);
+                    }
+                    //конец костыля
+                    PlayerPrefs.SetString(customPatsBaseKey + "_name_" + (customPatCount - 1),custName);
+                    custPat[customPatCount - 1].name = custName;
+                    savePattern = paused = selectArea = savingCustomName = false;
+                    gpan = true;
+                    gamefield.mouseRestr = false;
+                }
             }
         }
 
