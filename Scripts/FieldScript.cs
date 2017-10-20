@@ -351,7 +351,7 @@ public class FieldScript : MonoBehaviour
     public Camera cam;
     bool getoffset = false, mousemoved = false;
     public bool mouseRestr = false;
-    public float zoomSpeed = 0.5f;
+    public float zoomSpeed = 0.2f;
 
     public void PCalculations()
     {
@@ -364,6 +364,7 @@ public class FieldScript : MonoBehaviour
             }
         }
         //TODO
+        //Debug.Log("Number of touches: " + Input.touchCount);
         if (Input.touchCount == 2)
         {
             // Store both touches.
@@ -382,7 +383,7 @@ public class FieldScript : MonoBehaviour
             float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
 
             // Zoom
-            this.transform.Translate(0, deltaMagnitudeDiff*zoomSpeed, 0);
+            this.transform.Translate(0, 0, -deltaMagnitudeDiff * zoomSpeed);
         }
         if (Input.touchCount == 1) /*!turning && !wassaving && !wasloading*/
         {
