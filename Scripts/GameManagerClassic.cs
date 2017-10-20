@@ -554,7 +554,7 @@ public class GameManagerClassic : MonoBehaviour {
         deletePatCrossR = new Rect(deletePatConfR.x - crossR.width*2, deletePatConfR.y, crossR.width, rPauseMenuElemH);
         deletePatCrossBoxR = new Rect(deletePatConfR.x - crossR.width*2-blackind, deletePatConfR.y-blackind, crossR.width+blackind*2, rPauseMenuElemH + blackind * 2);
 
-        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind*2;
+        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind;
         autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
         rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
         timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
@@ -1041,7 +1041,7 @@ public class GameManagerClassic : MonoBehaviour {
             else
             {
                 GUI.Box(deletePatConfBoxR, "", MainSkin.customStyles[0]);
-                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + custPat[numDeletePat].name + "'" + "?" , MainSkin.customStyles[1]);
+                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + /*possible bug creator*/custPat[numDeletePat].name + "'" + "?" , MainSkin.customStyles[1]);
                 GUI.Box(deletePatTickBoxR, "", MainSkin.customStyles[0]);
                 GUI.Box(deletePatCrossBoxR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(deletePatTickR, tickC, MainSkin.customStyles[1]))
