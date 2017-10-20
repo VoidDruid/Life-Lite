@@ -813,16 +813,7 @@ public class GameManagerClassic : MonoBehaviour {
                 if (GUI.Button(patSaveNameConfR, tickC, MainSkin.customStyles[1]))
                 {
                     //FIXME
-                    //УЖАСНЫЙ КОСТЫЛЬ!
-                    pressedGo = gamefield.GetPressedGO();
-                    if (pressedGo != null)
-                    {
-                        int pgoX, pgoZ;
-                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                        gamefield.FlipCell(pgoX, pgoZ);
-                    }
-                    //конец костыля
+                    UnpauseFuckedWay();
                     PlayerPrefs.SetString(customPatsBaseKey + "_name_" + (customPatCount - 1),custName);
                     custPat[custPat.Count - 1].name = custName;
                     savePattern = paused = selectArea = savingCustomName = false;
@@ -877,22 +868,11 @@ public class GameManagerClassic : MonoBehaviour {
                 if (GUI.Button(continueR, continueC, MainSkin.customStyles[1]))
                 {
                     //FIXME
-                    //УЖАСНЫЙ КОСТЫЛЬ!
-                    pressedGo = gamefield.GetPressedGO();
-                    if (pressedGo != null)
-                    {
-                        int pgoX, pgoZ;
-                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                        gamefield.FlipCell(pgoX, pgoZ);
-                    }
-                    //конец костыля
+                    UnpauseFuckedWay();
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
                 }
-
-                //TODO
-                if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))
+                if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))//REMOVE!
                 {
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
@@ -1046,6 +1026,7 @@ public class GameManagerClassic : MonoBehaviour {
                 GUI.Box(deletePatCrossBoxR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(deletePatTickR, tickC, MainSkin.customStyles[1]))
                 {
+                    //FIXME
                     UnpauseFuckedWay();
                     DeleteCustomPattern(numDeleteArr, numDeletePat);
                     customPlaceMenu = false;
@@ -1054,6 +1035,7 @@ public class GameManagerClassic : MonoBehaviour {
                 }
                 if (GUI.Button(deletePatCrossR, crossC, MainSkin.customStyles[1]))
                 {
+                    //FIXME
                     UnpauseFuckedWay();
                     customPlaceMenu = false;
                     paused = false;
@@ -1137,20 +1119,11 @@ public class GameManagerClassic : MonoBehaviour {
                 gpan = true;
                 drawing = false;
                 paused = false;
-                //FIXME
-                //УЖАСНЫЙ КОСТЫЛЬ!
                 if (drawType == DrawType.black)
                 {
-                    pressedGo = gamefield.GetPressedGO();
-                    if (pressedGo != null && pressedGo.tag == "Cell")
-                    {
-                        int pgoX, pgoZ;
-                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                        gamefield.FlipCell(pgoX, pgoZ);
-                    }
+                    //FIXME
+                    UnpauseFuckedWay();
                 }
-                //конец костыля
             }
         }
     }
