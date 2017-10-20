@@ -1041,7 +1041,7 @@ public class GameManagerClassic : MonoBehaviour {
             else
             {
                 GUI.Box(deletePatConfBoxR, "", MainSkin.customStyles[0]);
-                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + /*custPat[numDeletePat].name +*/ "'" + "?" , MainSkin.customStyles[1]);
+                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + custPat[numDeletePat].name + "'" + "?" , MainSkin.customStyles[1]);
                 GUI.Box(deletePatTickBoxR, "", MainSkin.customStyles[0]);
                 GUI.Box(deletePatCrossBoxR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(deletePatTickR, tickC, MainSkin.customStyles[1]))
