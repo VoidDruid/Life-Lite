@@ -19,6 +19,8 @@ public class GameManagerClassic : MonoBehaviour {
 
     //TODO Resoursec.Load / unload
     private int customPatCount = 0;
+    const int MAX_CUSTOMS = 100;
+    private bool[] customPatsNums;
     string customPatPfxCount = "_count";
     string customPatsBaseKey = "custom_pat";
     string customPatsLanePfx = "_lane_";
@@ -305,27 +307,36 @@ public class GameManagerClassic : MonoBehaviour {
     {
         if (PlayerPrefs.HasKey(customPatsBaseKey + customPatPfxCount))
         {
+            customPatsNums = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_nums");
             customPatCount = PlayerPrefs.GetInt(customPatsBaseKey + customPatPfxCount);
-            for (int i = 0; i < customPatCount; i++)
-            {
-                Pattern custom = new Pattern();
-                string nameGet = "custom " + i;
-                string name = PlayerPrefs.GetString(customPatsBaseKey + "_name_" + i);
-                custom.name = name;
-                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + nameGet);
-                List<List<bool>> def = new List<List<bool>>();
-                for (int j = 0; j < size; j++)
+            for(int i = 0; i<MAX_CUSTOMS; i++)
+                if (customPatsNums[i])
                 {
-                    //ОЧЕНЬ КРИВО
-                    //FIXME
-                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + nameGet + customPatsLanePfx + j);
-                    List<bool> tmpL = new List<bool>();
-                    tmpL.AddRange(tmp);
-                    def.Add(tmpL);
+                    Pattern custom = new Pattern();
+                    string nameGet = "custom " + i;
+                    string name = PlayerPrefs.GetString(customPatsBaseKey + "_name_" + i);
+                    custom.name = name;
+                    int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + nameGet);
+                    List<List<bool>> def = new List<List<bool>>();
+                    for (int j = 0; j < size; j++)
+                    {
+                        //ОЧЕНЬ КРИВО
+                        //хотя не так уж и криво, если подумать. Наглядно зато, top kek
+                        //FIXME
+                        bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + nameGet + customPatsLanePfx + j);
+                        List<bool> tmpL = new List<bool>();
+                        tmpL.AddRange(tmp);
+                        def.Add(tmpL);
+                    }
+                    custom.def = def;
+                    custPat.Add(custom);
                 }
-                custom.def = def;
-                custPat.Add(custom);
-            }
+        }
+        else
+        {
+            customPatsNums = new bool[MAX_CUSTOMS];
+            for (int i = 0; i < MAX_CUSTOMS; i++)
+                customPatsNums[i] = false;
         }
     }
 
@@ -410,6 +421,7 @@ public class GameManagerClassic : MonoBehaviour {
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
     private Rect patSaveNameR, patSaveNameBoxR;
+    private Rect deletePatR, deletePatConfR, deletePatConfBoxR, deletePatTickR, deletePatTickBoxR, deletePatCrossBoxR, deletePatCrossR;
     private Rect patSaveNameConfR, patSaveNameConfBoxR;
     private Rect drawWhiteR, drawBlackR, drawInvertR;
     private Rect tickR, crossR;
@@ -425,6 +437,7 @@ public class GameManagerClassic : MonoBehaviour {
     //контент для GUI
     public GUIContent pauseC, placeC, customC, toolsC, autoturnC, drawC;
     public GUIContent continueC, exitC, saveC, loadC, optionsC;
+    public GUIContent deletePatConfC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
     public GUIContent drawWhiteC, drawBlackC, drawInvertC;
@@ -532,12 +545,21 @@ public class GameManagerClassic : MonoBehaviour {
         rCustomPlaceBoxH = rPlaceBoxHW;
         rCustomPlaceBoxW = rCustomW;
 
+        deletePatR = new Rect(0, 0, rCustomPlaceBoxW/4, rCustomPlaceBoxH-2);
+        int widPatname = rPauseMenuW * 2;
+        deletePatConfR = new Rect((Screen.width - widPatname) / 2, (Screen.height - rPauseMenuElemH) / 2, widPatname, rPauseMenuElemH);
+        deletePatConfBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind * 2, rPauseMenuElemH + blackind * 2);
+        deletePatTickR = new Rect (deletePatConfR.x + deletePatConfR.width + tickR.width, deletePatConfR.y, tickR.width, rPauseMenuElemH);
+        deletePatTickBoxR = new Rect(deletePatConfR.x + deletePatConfR.width + tickR.width - blackind, deletePatConfR.y - blackind, tickR.width + blackind * 2, rPauseMenuElemH + blackind * 2);
+        deletePatCrossR = new Rect(deletePatConfR.x - crossR.width*2, deletePatConfR.y, crossR.width, rPauseMenuElemH);
+        deletePatCrossBoxR = new Rect(deletePatConfR.x - crossR.width*2-blackind, deletePatConfR.y-blackind, crossR.width+blackind*2, rPauseMenuElemH + blackind * 2);
+
         rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind*2;
         autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
         rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
         timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
 
-        int widPatname = rPauseMenuW * 2;
+        
         patSaveNameR = new Rect((Screen.width - widPatname) / 2, (Screen.height - rPauseMenuElemH) / 2, widPatname, rPauseMenuElemH);
         patSaveNameBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind*2, rPauseMenuElemH + blackind * 2);
         patSaveNameConfR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width, patSaveNameR.y, tickR.width, rPauseMenuElemH);
@@ -704,6 +726,7 @@ public class GameManagerClassic : MonoBehaviour {
     bool autoturn = false;
     bool drawing = false;
     bool savingCustomName = false;
+    bool deletingCustomPat = false;
     string custName = "Enter name";
     DrawType drawType = DrawType.black;
     IntInputString readFromTime;
@@ -726,6 +749,24 @@ public class GameManagerClassic : MonoBehaviour {
             ln.SetActive(!ln.activeInHierarchy);
     }
     Quaternion outlineRot;
+
+    void UnpauseFuckedWay()
+    {
+        //FIXME
+        //УЖАСНЫЙ КОСТЫЛЬ!
+        pressedGo = gamefield.GetPressedGO();
+        if (pressedGo != null)
+        {
+            int pgoX, pgoZ;
+            pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+            pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+            gamefield.FlipCell(pgoX, pgoZ);
+        }
+        //конец костыля
+    }
+    //vars for pat deletion
+    int numDeleteArr = 0;
+    int numDeletePat = 0;
     //TODO: автоматизировать убирание/появление gpan, паузу и пр.
     void OnGUI()
     {
@@ -767,7 +808,8 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 GUI.Box(patSaveNameBoxR, "", MainSkin.customStyles[0]);
                 GUI.Box(patSaveNameConfBoxR, "", MainSkin.customStyles[0]);
-                custName = GUI.TextField(patSaveNameR, custName, MainSkin.customStyles[1]);
+
+                custName = GUI.TextField(patSaveNameR, custName, MainSkin.textField);
                 if (GUI.Button(patSaveNameConfR, tickC, MainSkin.customStyles[1]))
                 {
                     //FIXME
@@ -782,7 +824,7 @@ public class GameManagerClassic : MonoBehaviour {
                     }
                     //конец костыля
                     PlayerPrefs.SetString(customPatsBaseKey + "_name_" + (customPatCount - 1),custName);
-                    custPat[customPatCount - 1].name = custName;
+                    custPat[custPat.Count - 1].name = custName;
                     savePattern = paused = selectArea = savingCustomName = false;
                     gpan = true;
                     gamefield.mouseRestr = false;
@@ -810,7 +852,7 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = !customPlaceMenu;
                 customPlaceMenu = !customPlaceMenu;
                 placeMenu = placePatTMenu = toolsMenu = drawMenu = false;
-                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth, Screen.height - rCustomPlaceBoxH - blackind);
+                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth + deletePatR.width + 1, Screen.height - rCustomPlaceBoxH - blackind);
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
@@ -969,18 +1011,55 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (customPlaceMenu)
         {
-            scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW, custPat.Count * rCustomPlaceBoxH));
-            for (int i = 0; i < custPat.Count; i++)
-                if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+            if (!deletingCustomPat)
+            {
+                scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW + deletePatR.width, custPat.Count * rCustomPlaceBoxH));
+                int i = 0;
+                for (int j = 0; j < MAX_CUSTOMS; j++)
+                    if (customPatsNums[j])
+                    {
+                        if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+                        {
+                            customPlaceMenu = false;
+                            paused = true;
+                            placing = true;
+                            gpan = false;
+                            InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
+                            break;
+                        }
+                        if (GUI.Button(new Rect(rCustomPlaceBoxW + 1, rCustomPlaceBoxH * i + 1, deletePatR.width, deletePatR.height), crossC, MainSkin.customStyles[4]))
+                        {
+                            numDeleteArr = j;
+                            numDeletePat = i;
+                            deletingCustomPat = true;
+                            break;
+                        }
+                        i++;
+                    }
+                GUI.EndScrollView();
+            }
+            else
+            {
+                GUI.Box(deletePatConfBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + /*custPat[numDeletePat].name +*/ "'" + "?" , MainSkin.customStyles[1]);
+                GUI.Box(deletePatTickBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(deletePatCrossBoxR, "", MainSkin.customStyles[0]);
+                if (GUI.Button(deletePatTickR, tickC, MainSkin.customStyles[1]))
                 {
+                    UnpauseFuckedWay();
+                    DeleteCustomPattern(numDeleteArr, numDeletePat);
                     customPlaceMenu = false;
-                    paused = true;
-                    placing = true;
-                    gpan = false;
-                    InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
-                    break;
+                    paused = false;
+                    deletingCustomPat = false;
                 }
-            GUI.EndScrollView();
+                if (GUI.Button(deletePatCrossR, crossC, MainSkin.customStyles[1]))
+                {
+                    UnpauseFuckedWay();
+                    customPlaceMenu = false;
+                    paused = false;
+                    deletingCustomPat = false;
+                }
+            }
         }
         if (toolsMenu)
         {
@@ -1099,6 +1178,7 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
+    void SaveCustomPatternNums () { PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_nums", customPatsNums); }
     void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
         //string path = "Assets/Texts/customPatterns.txt";
@@ -1123,6 +1203,8 @@ public class GameManagerClassic : MonoBehaviour {
         //writer.Close(); 
         Pattern custom = new Pattern();
         string name = "custom " + customPatCount;
+        customPatsNums[customPatCount] = true;
+        SaveCustomPatternNums();
         custom.name = name;
         custom.def = pat;
         custPat.Add(custom);
@@ -1135,5 +1217,19 @@ public class GameManagerClassic : MonoBehaviour {
             PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + i, arr[i].ToArray());
         Debug.Log("saved");
         savePattern = false;
+    }
+
+    void DeleteCustomPattern(int numArr, int numPat)
+    {
+        Debug.Log("Deleting at " + numPat);
+        custPat.RemoveAt(numPat);
+        string name = "custom " + numArr;
+        PlayerPrefs.DeleteKey(customPatsBaseKey + "_" + name);
+        //TODO
+        //possible memory leak
+        /*for (int i = 0; i < custPat[numPat].def.Count; i++)
+            PlayerPrefs.DeleteKey(customPatsBaseKey + "_" + name + customPatsLanePfx + i);*/
+        customPatsNums[numArr] = false;
+        SaveCustomPatternNums();
     }
 }
