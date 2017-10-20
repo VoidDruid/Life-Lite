@@ -451,7 +451,7 @@ public class GameManagerClassic : MonoBehaviour {
     public float SaveSlotsSpaceH;
     public float TickCrossAreaSelect;
     const int patMenuNum = 4;
-    const int pauseRowsNum = 4;
+    const int pauseRowsNum = 3;
 
     //реальная ширина элементов GUI в пикселях
     private static int rGpanH;
@@ -515,8 +515,9 @@ public class GameManagerClassic : MonoBehaviour {
         int heightSt = pauseMenuTop;
         continueR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
         heightSt += rPauseMenuElemH + blackind;
-        optionsR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
-        heightSt += rPauseMenuElemH + blackind;
+        //options are not needed (for now)
+        optionsR = new Rect(pauseMenuLeft, heightSt, 0, 0);
+        //heightSt += rPauseMenuElemH + blackind;
         //костыль с черными отступами в save load
         saveR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW / 2-1, rPauseMenuElemH);
         loadR = new Rect(pauseMenuLeft+ rPauseMenuW / 2+1, heightSt, rPauseMenuW / 2-1, rPauseMenuElemH);
