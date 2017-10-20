@@ -764,6 +764,7 @@ public class GameManagerClassic : MonoBehaviour {
         }
         //конец костыля
     }
+
     //vars for pat deletion
     int numDeleteArr = 0;
     int numDeletePat = 0;
