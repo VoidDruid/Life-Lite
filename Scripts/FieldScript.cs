@@ -352,7 +352,7 @@ public class FieldScript : MonoBehaviour
     bool getoffset = false, mousemoved = false;
     public bool mouseRestr = false;
     public float zoomSpeed = 0.2f;
-
+    public float minHeight, maxHeight;
     public void PCalculations()
     {
         foreach (var r in scrRestraints)
@@ -384,6 +384,9 @@ public class FieldScript : MonoBehaviour
 
             // Zoom
             this.transform.Translate(0, 0, -deltaMagnitudeDiff * zoomSpeed);
+            if (this.transform.position.y < minHeight) this.transform.position = new Vector3(this.transform.position.x, minHeight, this.transform.position.z);
+            if (this.transform.position.y > maxHeight) this.transform.position = new Vector3(this.transform.position.x, maxHeight, this.transform.position.z);
+
         }
         if (Input.touchCount == 1) /*!turning && !wassaving && !wasloading*/
         {

@@ -344,13 +344,6 @@ public class GameManagerClassic : MonoBehaviour {
     void Start()
     {
         LoadCustoms();
-        outlineRot.eulerAngles = new Vector3(90, 0, 0);
-        outlines = new List<GameObject>();
-        for (int i = 0; i<4;i++)
-        {
-            outlines.Add(Instantiate(areaOutline, Vector3.zero, outlineRot) as GameObject);
-            outlines[i].SetActive(false);
-        }
         List<string> patConts = new List<string>();
         patConts.Add(movPatterns.text);
         patConts.Add(periPatterns.text);
@@ -425,7 +418,7 @@ public class GameManagerClassic : MonoBehaviour {
     private Rect patSaveNameConfR, patSaveNameConfBoxR;
     private Rect drawWhiteR, drawBlackR, drawInvertR;
     private Rect tickR, crossR;
-    private Rect endDrawR;
+    private Rect endDrawR, endDrawBoxR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
     
 
@@ -504,13 +497,15 @@ public class GameManagerClassic : MonoBehaviour {
         tickR = new Rect(Screen.width / 2 - Screen.width * TickCrossAreaSelect, 0, Screen.width * TickCrossAreaSelect, rGpanH);
         crossR = new Rect(Screen.width / 2 +blackind, 0, Screen.width * TickCrossAreaSelect, rGpanH);
         endDrawR = tickR;
-        endDrawR.x = Screen.width - endDrawR.width;
-        endDrawR.y = Screen.height - endDrawR.height;
+        endDrawR.height = endDrawR.width;
+        endDrawR.x = Screen.width - endDrawR.width-blackind;
+        endDrawR.y = Screen.height - endDrawR.height-blackind;
+        endDrawBoxR = new Rect(endDrawR.x - blackind, endDrawR.y - blackind, endDrawR.width + blackind * 2, endDrawR.height + blackind * 2);
 
         int pauseMenuLeft, pauseMenuTop;
         pauseMenuTop = Mathf.RoundToInt((Screen.height - rPauseMenuH) / 2);
         pauseMenuLeft = Mathf.RoundToInt((Screen.width - rPauseMenuW) / 2);
-        pauseMenuR = new Rect(pauseMenuLeft - blackind, pauseMenuTop - blackind, rPauseMenuW + blackind * 2, rPauseMenuH + blackind * pauseRowsNum);
+        pauseMenuR = new Rect(pauseMenuLeft - blackind, pauseMenuTop - blackind, rPauseMenuW + blackind * 2, rPauseMenuH + blackind * (pauseRowsNum+1));
         restraints.Add("pauseMenu", pauseMenuR);
         int heightSt = pauseMenuTop;
         continueR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
@@ -743,13 +738,6 @@ public class GameManagerClassic : MonoBehaviour {
     }
     SaveLoad checkSL;
     int chosedSaveSlot = 1;
-    List<GameObject> outlines;
-    void ChangeStateOutlines()
-    {
-        foreach (var ln in outlines)
-            ln.SetActive(!ln.activeInHierarchy);
-    }
-    Quaternion outlineRot;
 
     void UnpauseFuckedWay()
     {
@@ -795,7 +783,6 @@ public class GameManagerClassic : MonoBehaviour {
                         savingCustomName = true;
                     }
                     AreaSelecter.GetInstance().Reset();
-                    ChangeStateOutlines();
                 }
                 if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
                 {
@@ -1055,7 +1042,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = FillWhite;
             }
             if (GUI.Button(fillBlackR,fillBlackC, MainSkin.customStyles[1]))
@@ -1065,7 +1051,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = FillBlack;
             }
             if (GUI.Button(invertR,invertC, MainSkin.customStyles[1]))
@@ -1075,7 +1060,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = Invert;
             }
             if (GUI.Button(savePattR,savePattC, MainSkin.customStyles[1]))
@@ -1085,7 +1069,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 savePattern = true;
             }
         }
@@ -1116,6 +1099,7 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (drawing)
         {
+            GUI.Box(endDrawBoxR, "", MainSkin.customStyles[0]);
             if (GUI.Button(endDrawR,crossC, MainSkin.customStyles[1]))
             {
                 gpan = true;
