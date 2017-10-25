@@ -406,7 +406,7 @@ public class GameManagerClassic : MonoBehaviour {
         //LoadCustoms();
         ResetCamera();
         CalculateGUI();
-        readFromTime = new IntInputString(1, 2, int.MaxValue - 1, timerR);
+        readFromTime = new IntInputString(0, 2, int.MaxValue - 1, timerR);
     }
 
     //Rectы для всего GUI
