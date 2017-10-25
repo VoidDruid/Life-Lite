@@ -35,7 +35,7 @@ public class MenuScript : MonoBehaviour {
 		InGame = false;
 		rBoxS = Screen.width * BoxS;
 		rIndent = Screen.width * Indent;
-		rExitS = Screen.width * ExitS;
+		//rExitS = Screen.width * ExitS;
         this.transform.position = new Vector3(xleng / 2, 7, 3);
         GUICalc();
 
@@ -84,6 +84,7 @@ public class MenuScript : MonoBehaviour {
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
         xInput = new IntInputString(20, 60, 300, fieldXInR);
         zInput = new IntInputString(20, 60, 300, fieldZInR);
+        MainSkin.customStyles[2].fontSize = Mathf.RoundToInt(rBoxS / 8);
     }
     
     void Continue()

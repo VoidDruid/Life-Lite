@@ -596,6 +596,8 @@ public class GameManagerClassic : MonoBehaviour {
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
         xInput = new IntInputString(20, 60, 300, fieldXInR);
         zInput = new IntInputString(20, 60, 300, fieldZInR);
+
+        MainSkin.customStyles[1].fontSize = Mathf.RoundToInt(rGpanH / 2.4f);
     }
 
 
@@ -807,8 +809,11 @@ public class GameManagerClassic : MonoBehaviour {
             if (!savingCustomName)
             {
                 if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
-                    Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2 - AreaSelecter.GetInstance().screenCorner1), Color.blue);
-
+                {
+                    Vector2 corn1 = AreaSelecter.GetInstance().screenCorner1;
+                    Vector2 corn2 = AreaSelecter.GetInstance().screenCorner2 - AreaSelecter.GetInstance().screenCorner1;
+                    Drawing.DrawRect(new Rect(corn1, corn2), Color.blue);
+                }
                 GUI.Box(new Rect(tickR.x - blackind, 0, tickR.width * 2 + blackind * 3, rGpanH + blackind), "", MainSkin.customStyles[0]);
                 if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
                 {
