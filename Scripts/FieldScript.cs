@@ -363,9 +363,8 @@ public class FieldScript : MonoBehaviour
                 break;
             }
         }
-        //TODO
-        //Debug.Log("Number of touches: " + Input.touchCount);
-        if (Input.touchCount == 2)
+
+        if (Input.touchCount == 2 && !mainMenu)
         {
             // Store both touches.
             Touch touchZero = Input.GetTouch(0);

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Advertisements;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -410,7 +411,7 @@ public class GameManagerClassic : MonoBehaviour {
 
     //Rectы для всего GUI
     private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR, drawR;
-    private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
+    private Rect pauseMenuR, continueR, exitR, saveR, loadR, recreateFieldR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
     private Rect patSaveNameR, patSaveNameBoxR;
@@ -429,7 +430,7 @@ public class GameManagerClassic : MonoBehaviour {
     public int blackind;
     //контент для GUI
     public GUIContent pauseC, placeC, customC, toolsC, autoturnC, drawC;
-    public GUIContent continueC, exitC, saveC, loadC, optionsC;
+    public GUIContent continueC, exitC, saveC, loadC, recreateFieldC;
     public GUIContent deletePatConfC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
@@ -444,7 +445,7 @@ public class GameManagerClassic : MonoBehaviour {
     public float SaveSlotsSpaceH;
     public float TickCrossAreaSelect;
     const int patMenuNum = 4;
-    const int pauseRowsNum = 3;
+    const int pauseRowsNum = 4;
 
     //реальная ширина элементов GUI в пикселях
     private static int rGpanH;
@@ -454,7 +455,18 @@ public class GameManagerClassic : MonoBehaviour {
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
     private int rCustomPlaceBoxH, rCustomPlaceBoxW;
-
+    //field restarts
+    public float fieldSettingsW;
+    public float fieldSettigsH;
+    public GUIContent xInputC, yInputC, typeSelecterC, confirmC, backC;
+    private float fieldSettingsRealW, fieldSettigsRealH;
+    private float fieldSettingsElemRealW, fieldSettingsElemRealH;
+    float halfElemRealWL, halfElemRealWR;
+    float halfElemRightPos;
+    private Rect fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
+    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR, typeSelecterBoxR;
+    const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
+    //
     private int rSlotH;
     Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
     void CalculateGUI()
@@ -510,9 +522,8 @@ public class GameManagerClassic : MonoBehaviour {
         int heightSt = pauseMenuTop;
         continueR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
         heightSt += rPauseMenuElemH + blackind;
-        //options are not needed (for now)
-        optionsR = new Rect(pauseMenuLeft, heightSt, 0, 0);
-        //heightSt += rPauseMenuElemH + blackind;
+        recreateFieldR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
+        heightSt += rPauseMenuElemH + blackind;
         //костыль с черными отступами в save load
         saveR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW / 2-1, rPauseMenuElemH);
         loadR = new Rect(pauseMenuLeft+ rPauseMenuW / 2+1, heightSt, rPauseMenuW / 2-1, rPauseMenuElemH);
@@ -560,6 +571,31 @@ public class GameManagerClassic : MonoBehaviour {
         patSaveNameBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind*2, rPauseMenuElemH + blackind * 2);
         patSaveNameConfR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width, patSaveNameR.y, tickR.width, rPauseMenuElemH);
         patSaveNameConfBoxR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width - blackind, patSaveNameR.y - blackind, tickR.width + blackind*2, rPauseMenuElemH + blackind * 2);
+
+        //ДА, Я ЗНАЮ ЧТО Я ПРОСТО СКОПИРОВАЛ КОД ИЗ MenuScript!
+        //это последняя фича во всем проекте, мне лень парить себе мозги
+        //отстань от меня
+        //зато работает
+        fieldSettingsRealW = Screen.width * fieldSettingsW + blackind * 2;
+        fieldSettigsRealH = Screen.height * fieldSettigsH + blackind * 4;
+        fieldMenuBoxR = new Rect((Screen.width - fieldSettingsRealW) / 2, (Screen.height - fieldSettigsRealH) / 2, fieldSettingsRealW, fieldSettigsRealH);
+        fieldSettingsElemRealH = (fieldSettigsRealH - blackind * 4) / 3;
+        fieldSettingsElemRealW = (fieldSettingsRealW - blackind * 2);
+        //fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR
+        halfElemRealWL = fieldSettingsElemRealW / 2 - blackind;
+        halfElemRealWR = fieldSettingsElemRealW / 2;
+        fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        halfElemRightPos = fieldXInR.x + fieldXInR.width + blackind;
+        fieldZInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
+        fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectEmptR = new Rect(fieldMenuBoxR.x + fieldMenuBoxR.width, fieldTypeSelectR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
+        typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y + blackind + typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
+        typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
+        xInput = new IntInputString(20, 60, 300, fieldXInR);
+        zInput = new IntInputString(20, 60, 300, fieldZInR);
     }
 
 
@@ -716,7 +752,13 @@ public class GameManagerClassic : MonoBehaviour {
     bool drawMenu = false;
     bool placing = false;
     bool slmenu = false, asureSL = false;
-    bool optionsmenu = false;
+
+    bool recreateMenu = false, typeSelector = false;
+    string typeSelectT = "Select type";
+    IntInputString xInput;
+    IntInputString zInput;
+    int xNewLeng, zNewLeng;
+
     bool savePattern = false;
     bool customPlaceMenu= false;
     bool autoturn = false;
@@ -851,7 +893,7 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (pauseMenu)
         {
-            if (!slmenu && !optionsmenu)
+            if (!slmenu && !recreateMenu)
             {
                 GUI.Box(pauseMenuR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(continueR, continueC, MainSkin.customStyles[1]))
@@ -861,10 +903,9 @@ public class GameManagerClassic : MonoBehaviour {
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
                 }
-                if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))//REMOVE!
+                if (GUI.Button(recreateFieldR, recreateFieldC, MainSkin.customStyles[1]))
                 {
-                    gamefield.scrRestraints.Clear();
-                    paused = pauseMenu = false;
+                    recreateMenu = true;
                 }
 
                 if (GUI.Button(saveR, saveC, MainSkin.customStyles[1]))
@@ -930,9 +971,56 @@ public class GameManagerClassic : MonoBehaviour {
                 }
 
             }
-            if (optionsmenu)
+            if (recreateMenu)
             {
-
+                GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
+                if (!typeSelector)
+                {
+                    xInput.TextField(ref xNewLeng, MainSkin.textField);
+                    zInput.TextField(ref zNewLeng, MainSkin.textField);
+                }
+                else
+                {
+                    GUI.Box(fieldXInR, xInput.GetCont(), MainSkin.textField);
+                    GUI.Box(fieldZInR, zInput.GetCont(), MainSkin.textField);
+                }
+                if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = true;
+                }
+                if (GUI.Button(fieldConfirmR, confirmC, MainSkin.customStyles[1]))
+                {
+                    Restart(typeSelecterC.text);
+                    recreateMenu = false;
+                    ShowAd();
+                }
+                if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = false;
+                    typeSelecterC.text = typeSelectT;
+                    recreateMenu = false;
+                    xInput.Reset();
+                    zInput.Reset();
+                }
+                if (typeSelector)
+                {
+                    GUI.Box(typeSelecterBoxR, " ", MainSkin.customStyles[0]);
+                    if (GUI.Button(typeSelectEmptR, "Empty", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: empty";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectBlackR, "Black", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: black";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectRandR, "Random", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: random";
+                        typeSelector = false;
+                    }
+                }
             }
         }
         if (placeMenu)
@@ -1190,5 +1278,35 @@ public class GameManagerClassic : MonoBehaviour {
             PlayerPrefs.DeleteKey(customPatsBaseKey + "_" + name + customPatsLanePfx + i);*/
         customPatsNums[numArr] = false;
         SaveCustomPatternNums();
+    }
+
+    void Restart(string fType)
+    {
+        gamefield.DestroyField();
+        gamefield.Initialize(xNewLeng, zNewLeng);
+        switch (fType)
+        {
+            case typeWhite:
+                gamefield.CreateEmptyField(false);
+                break;
+            case typeBlack:
+                gamefield.CreateEmptyField(true);
+                break;
+            case typeRandom:
+                gamefield.CreateRandomField();
+                break;
+            default:
+                gamefield.CreateEmptyField(false);
+                break;
+        }
+    }
+
+    public void ShowAd()
+    {
+        if (Advertisement.IsReady())
+        {
+            Debug.Log("ad");
+            Advertisement.Show();
+        }
     }
 }

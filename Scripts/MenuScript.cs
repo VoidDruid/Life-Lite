@@ -105,7 +105,7 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
 		camrot.eulerAngles = StartCameraRot;
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
-        GameCamera.GetComponent<GameManagerClassic>().xleng =xleng;
+        GameCamera.GetComponent<GameManagerClassic>().xleng = xleng;
         GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
         switch (fType)
         {
