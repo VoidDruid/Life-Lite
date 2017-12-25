@@ -811,8 +811,17 @@ public class GameManagerClassic : MonoBehaviour {
                 if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
                 {
                     Vector2 corn1 = AreaSelecter.GetInstance().screenCorner1;
-                    Vector2 corn2 = AreaSelecter.GetInstance().screenCorner2 - AreaSelecter.GetInstance().screenCorner1;
-                    Drawing.DrawRect(new Rect(corn1, corn2), Color.blue);
+                    Vector2 corn2 = AreaSelecter.GetInstance().screenCorner2;
+                    Debug.Log(corn1 + " " + corn2);
+                    //Drawing.DrawRect(new Rect(corn1, corn2), Color.blue);
+                    float x1 = corn1.x < corn2.x ? corn1.x : corn2.x;
+                    float x2 = corn1.x > corn2.x ? corn1.x : corn2.x;
+                    float y1 = corn1.y < corn2.y ? corn1.y : corn2.y;
+                    float y2 = corn1.y > corn2.y ? corn1.y : corn2.y;
+                    y2 = Screen.height - y2;
+                    y1 = Screen.height - y1;
+                    Debug.Log(x1 + " " + x2 + " " + y1 + " " + y2);
+                    GUI.Box(new Rect(x1,y2,x2-x1,y1-y2), "");
                 }
                 GUI.Box(new Rect(tickR.x - blackind, 0, tickR.width * 2 + blackind * 3, rGpanH + blackind), "", MainSkin.customStyles[0]);
                 if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
