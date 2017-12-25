@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Advertisements;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +20,8 @@ public class GameManagerClassic : MonoBehaviour {
 
     //TODO Resoursec.Load / unload
     private int customPatCount = 0;
+    const int MAX_CUSTOMS = 100;
+    private bool[] customPatsNums;
     string customPatPfxCount = "_count";
     string customPatsBaseKey = "custom_pat";
     string customPatsLanePfx = "_lane_";
@@ -305,26 +308,36 @@ public class GameManagerClassic : MonoBehaviour {
     {
         if (PlayerPrefs.HasKey(customPatsBaseKey + customPatPfxCount))
         {
+            customPatsNums = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_nums");
             customPatCount = PlayerPrefs.GetInt(customPatsBaseKey + customPatPfxCount);
-            for (int i = 0; i < customPatCount; i++)
-            {
-                Pattern custom = new Pattern();
-                string name = "custom " + i;
-                custom.name = name;
-                int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + name);
-                List<List<bool>> def = new List<List<bool>>();
-                for (int j = 0; j < size; j++)
+            for(int i = 0; i<MAX_CUSTOMS; i++)
+                if (customPatsNums[i])
                 {
-                    //ОЧЕНЬ КРИВО
-                    //FIXME
-                    bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + j);
-                    List<bool> tmpL = new List<bool>();
-                    tmpL.AddRange(tmp);
-                    def.Add(tmpL);
+                    Pattern custom = new Pattern();
+                    string nameGet = "custom " + i;
+                    string name = PlayerPrefs.GetString(customPatsBaseKey + "_name_" + i);
+                    custom.name = name;
+                    int size = PlayerPrefs.GetInt(customPatsBaseKey + "_" + nameGet);
+                    List<List<bool>> def = new List<List<bool>>();
+                    for (int j = 0; j < size; j++)
+                    {
+                        //ОЧЕНЬ КРИВО
+                        //хотя не так уж и криво, если подумать. Наглядно зато, top kek
+                        //FIXME
+                        bool[] tmp = PlayerPrefsX.GetBoolArray(customPatsBaseKey + "_" + nameGet + customPatsLanePfx + j);
+                        List<bool> tmpL = new List<bool>();
+                        tmpL.AddRange(tmp);
+                        def.Add(tmpL);
+                    }
+                    custom.def = def;
+                    custPat.Add(custom);
                 }
-                custom.def = def;
-                custPat.Add(custom);
-            }
+        }
+        else
+        {
+            customPatsNums = new bool[MAX_CUSTOMS];
+            for (int i = 0; i < MAX_CUSTOMS; i++)
+                customPatsNums[i] = false;
         }
     }
 
@@ -332,13 +345,6 @@ public class GameManagerClassic : MonoBehaviour {
     void Start()
     {
         LoadCustoms();
-        outlineRot.eulerAngles = new Vector3(90, 0, 0);
-        outlines = new List<GameObject>();
-        for (int i = 0; i<4;i++)
-        {
-            outlines.Add(Instantiate(areaOutline, Vector3.zero, outlineRot) as GameObject);
-            outlines[i].SetActive(false);
-        }
         List<string> patConts = new List<string>();
         patConts.Add(movPatterns.text);
         patConts.Add(periPatterns.text);
@@ -400,17 +406,20 @@ public class GameManagerClassic : MonoBehaviour {
         //LoadCustoms();
         ResetCamera();
         CalculateGUI();
-        readFromTime = new IntInputString(1, 2, int.MaxValue - 1, timerR);
+        readFromTime = new IntInputString(0, 2, int.MaxValue - 1, timerR);
     }
 
     //Rectы для всего GUI
     private Rect pauseR, placeR, customR, toolsR, timerR, autoturnR, drawR;
-    private Rect pauseMenuR, continueR, exitR, saveR, loadR, optionsR;
+    private Rect pauseMenuR, continueR, exitR, saveR, loadR, recreateFieldR;
     private Rect movPatR, periPatR, genPatR, statPatR;
     private Rect fillWhiteR, fillBlackR, invertR, savePattR;
+    private Rect patSaveNameR, patSaveNameBoxR;
+    private Rect deletePatR, deletePatConfR, deletePatConfBoxR, deletePatTickR, deletePatTickBoxR, deletePatCrossBoxR, deletePatCrossR;
+    private Rect patSaveNameConfR, patSaveNameConfBoxR;
     private Rect drawWhiteR, drawBlackR, drawInvertR;
     private Rect tickR, crossR;
-    private Rect endDrawR;
+    private Rect endDrawR, endDrawBoxR;
     private Rect SLMenuRect, SLSlotRect, SLBackRect, SLBackButtRect, SLAsureQBox, SLAsureQ, SLConfBox, SLConf;
     
 
@@ -421,7 +430,8 @@ public class GameManagerClassic : MonoBehaviour {
     public int blackind;
     //контент для GUI
     public GUIContent pauseC, placeC, customC, toolsC, autoturnC, drawC;
-    public GUIContent continueC, exitC, saveC, loadC, optionsC;
+    public GUIContent continueC, exitC, saveC, loadC, recreateFieldC;
+    public GUIContent deletePatConfC;
     public GUIContent movPatC, periPatC, genPatC, statPatC;
     public GUIContent fillWhiteC, fillBlackC, invertC, savePattC;
     public GUIContent drawWhiteC, drawBlackC, drawInvertC;
@@ -445,7 +455,18 @@ public class GameManagerClassic : MonoBehaviour {
     private int rPauseMenuW, rPauseMenuH, rPauseMenuElemH;
     private int rSaveLoadW;
     private int rCustomPlaceBoxH, rCustomPlaceBoxW;
-
+    //field restarts
+    public float fieldSettingsW;
+    public float fieldSettigsH;
+    public GUIContent xInputC, yInputC, typeSelecterC, confirmC, backC;
+    private float fieldSettingsRealW, fieldSettigsRealH;
+    private float fieldSettingsElemRealW, fieldSettingsElemRealH;
+    float halfElemRealWL, halfElemRealWR;
+    float halfElemRightPos;
+    private Rect fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR, fieldBackR;
+    private Rect typeSelectEmptR, typeSelectBlackR, typeSelectRandR, typeSelecterBoxR;
+    const string typeWhite = "Type: white", typeBlack = "Type: black", typeRandom = "Type: random";
+    //
     private int rSlotH;
     Dictionary<string, Rect> restraints = new Dictionary<string, Rect>();
     void CalculateGUI()
@@ -488,18 +509,20 @@ public class GameManagerClassic : MonoBehaviour {
         tickR = new Rect(Screen.width / 2 - Screen.width * TickCrossAreaSelect, 0, Screen.width * TickCrossAreaSelect, rGpanH);
         crossR = new Rect(Screen.width / 2 +blackind, 0, Screen.width * TickCrossAreaSelect, rGpanH);
         endDrawR = tickR;
-        endDrawR.x = Screen.width - endDrawR.width;
-        endDrawR.y = Screen.height - endDrawR.height;
+        endDrawR.height = endDrawR.width;
+        endDrawR.x = Screen.width - endDrawR.width-blackind;
+        endDrawR.y = Screen.height - endDrawR.height-blackind;
+        endDrawBoxR = new Rect(endDrawR.x - blackind, endDrawR.y - blackind, endDrawR.width + blackind * 2, endDrawR.height + blackind * 2);
 
         int pauseMenuLeft, pauseMenuTop;
         pauseMenuTop = Mathf.RoundToInt((Screen.height - rPauseMenuH) / 2);
         pauseMenuLeft = Mathf.RoundToInt((Screen.width - rPauseMenuW) / 2);
-        pauseMenuR = new Rect(pauseMenuLeft - blackind, pauseMenuTop - blackind, rPauseMenuW + blackind * 2, rPauseMenuH + blackind * pauseRowsNum);
+        pauseMenuR = new Rect(pauseMenuLeft - blackind, pauseMenuTop - blackind, rPauseMenuW + blackind * 2, rPauseMenuH + blackind * (pauseRowsNum+1));
         restraints.Add("pauseMenu", pauseMenuR);
         int heightSt = pauseMenuTop;
         continueR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
         heightSt += rPauseMenuElemH + blackind;
-        optionsR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
+        recreateFieldR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW, rPauseMenuElemH);
         heightSt += rPauseMenuElemH + blackind;
         //костыль с черными отступами в save load
         saveR = new Rect(pauseMenuLeft, heightSt, rPauseMenuW / 2-1, rPauseMenuElemH);
@@ -529,10 +552,52 @@ public class GameManagerClassic : MonoBehaviour {
         rCustomPlaceBoxH = rPlaceBoxHW;
         rCustomPlaceBoxW = rCustomW;
 
-        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind*2;
+        deletePatR = new Rect(0, 0, rCustomPlaceBoxW/4, rCustomPlaceBoxH-2);
+        int widPatname = rPauseMenuW * 2;
+        deletePatConfR = new Rect((Screen.width - widPatname) / 2, (Screen.height - rPauseMenuElemH) / 2, widPatname, rPauseMenuElemH);
+        deletePatConfBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind * 2, rPauseMenuElemH + blackind * 2);
+        deletePatTickR = new Rect (deletePatConfR.x + deletePatConfR.width + tickR.width, deletePatConfR.y, tickR.width, rPauseMenuElemH);
+        deletePatTickBoxR = new Rect(deletePatConfR.x + deletePatConfR.width + tickR.width - blackind, deletePatConfR.y - blackind, tickR.width + blackind * 2, rPauseMenuElemH + blackind * 2);
+        deletePatCrossR = new Rect(deletePatConfR.x - crossR.width*2, deletePatConfR.y, crossR.width, rPauseMenuElemH);
+        deletePatCrossBoxR = new Rect(deletePatConfR.x - crossR.width*2-blackind, deletePatConfR.y-blackind, crossR.width+blackind*2, rPauseMenuElemH + blackind * 2);
+
+        rAutoturnW = Mathf.RoundToInt(Screen.width * autoturnW) - blackind;
         autoturnR = new Rect(Screen.width - rAutoturnW - blackind, 0, rAutoturnW, rGpanH);
         rTimerW = Mathf.RoundToInt(Screen.width * timerW) - blackind;
         timerR = new Rect(autoturnR.x - blackind - rTimerW, 0, rTimerW, rGpanH);
+
+        
+        patSaveNameR = new Rect((Screen.width - widPatname) / 2, (Screen.height - rPauseMenuElemH) / 2, widPatname, rPauseMenuElemH);
+        patSaveNameBoxR = new Rect((Screen.width - widPatname) / 2 - blackind, (Screen.height - rPauseMenuElemH) / 2 - blackind, widPatname + blackind*2, rPauseMenuElemH + blackind * 2);
+        patSaveNameConfR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width, patSaveNameR.y, tickR.width, rPauseMenuElemH);
+        patSaveNameConfBoxR = new Rect(patSaveNameR.x + patSaveNameR.width + tickR.width - blackind, patSaveNameR.y - blackind, tickR.width + blackind*2, rPauseMenuElemH + blackind * 2);
+
+        //ДА, Я ЗНАЮ ЧТО Я ПРОСТО СКОПИРОВАЛ КОД ИЗ MenuScript!
+        //это последняя фича во всем проекте, мне лень парить себе мозги
+        //отстань от меня
+        //зато работает
+        fieldSettingsRealW = Screen.width * fieldSettingsW + blackind * 2;
+        fieldSettigsRealH = Screen.height * fieldSettigsH + blackind * 4;
+        fieldMenuBoxR = new Rect((Screen.width - fieldSettingsRealW) / 2, (Screen.height - fieldSettigsRealH) / 2, fieldSettingsRealW, fieldSettigsRealH);
+        fieldSettingsElemRealH = (fieldSettigsRealH - blackind * 4) / 3;
+        fieldSettingsElemRealW = (fieldSettingsRealW - blackind * 2);
+        //fieldMenuBoxR, fieldXInR, fieldZInR, fieldTypeSelectR, fieldConfirmR
+        halfElemRealWL = fieldSettingsElemRealW / 2 - blackind;
+        halfElemRealWR = fieldSettingsElemRealW / 2;
+        fieldXInR = new Rect(fieldMenuBoxR.x + blackind, fieldMenuBoxR.y + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        halfElemRightPos = fieldXInR.x + fieldXInR.width + blackind;
+        fieldZInR = new Rect(halfElemRightPos, fieldMenuBoxR.y + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        fieldTypeSelectR = new Rect(fieldMenuBoxR.x + blackind, fieldXInR.y + fieldXInR.height + blackind, fieldSettingsElemRealW, fieldSettingsElemRealH);
+        fieldConfirmR = new Rect(fieldMenuBoxR.x + blackind, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWL, fieldSettingsElemRealH);
+        fieldBackR = new Rect(halfElemRightPos, fieldTypeSelectR.y + fieldTypeSelectR.height + blackind, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectEmptR = new Rect(fieldMenuBoxR.x + fieldMenuBoxR.width, fieldTypeSelectR.y, halfElemRealWR, fieldSettingsElemRealH);
+        typeSelectBlackR = new Rect(typeSelectEmptR.x, fieldConfirmR.y, typeSelectEmptR.width, fieldSettingsElemRealH);
+        typeSelectRandR = new Rect(typeSelectEmptR.x, typeSelectBlackR.y + blackind + typeSelectBlackR.height, typeSelectEmptR.width, typeSelectEmptR.height);
+        typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
+        xInput = new IntInputString(20, 60, 300, fieldXInR);
+        zInput = new IntInputString(20, 60, 300, fieldZInR);
+
+        MainSkin.customStyles[1].fontSize = Mathf.RoundToInt(rGpanH / 2.4f);
     }
 
 
@@ -689,11 +754,20 @@ public class GameManagerClassic : MonoBehaviour {
     bool drawMenu = false;
     bool placing = false;
     bool slmenu = false, asureSL = false;
-    bool optionsmenu = false;
+
+    bool recreateMenu = false, typeSelector = false;
+    string typeSelectT = "Select type";
+    IntInputString xInput;
+    IntInputString zInput;
+    int xNewLeng, zNewLeng;
+
     bool savePattern = false;
     bool customPlaceMenu= false;
     bool autoturn = false;
     bool drawing = false;
+    bool savingCustomName = false;
+    bool deletingCustomPat = false;
+    string custName = "Enter name";
     DrawType drawType = DrawType.black;
     IntInputString readFromTime;
     PatternNums placePatTNum;
@@ -708,45 +782,89 @@ public class GameManagerClassic : MonoBehaviour {
     }
     SaveLoad checkSL;
     int chosedSaveSlot = 1;
-    List<GameObject> outlines;
-    void ChangeStateOutlines()
+
+    void UnpauseFuckedWay()
     {
-        foreach (var ln in outlines)
-            ln.SetActive(!ln.activeInHierarchy);
+        //FIXME
+        //УЖАСНЫЙ КОСТЫЛЬ!
+        pressedGo = gamefield.GetPressedGO();
+        if (pressedGo != null)
+        {
+            int pgoX, pgoZ;
+            pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
+            pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
+            gamefield.FlipCell(pgoX, pgoZ);
+        }
+        //конец костыля
     }
-    Quaternion outlineRot;
+
+    //vars for pat deletion
+    int numDeleteArr = 0;
+    int numDeletePat = 0;
     //TODO: автоматизировать убирание/появление gpan, паузу и пр.
     void OnGUI()
     {
         if (selectArea)
         {
-            if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
-                Drawing.DrawRect(new Rect(AreaSelecter.GetInstance().screenCorner1, AreaSelecter.GetInstance().screenCorner2-AreaSelecter.GetInstance().screenCorner1), Color.blue);
-
-            GUI.Box(new Rect(tickR.x-blackind,0,tickR.width*2+blackind*3,rGpanH+blackind),"", MainSkin.customStyles[0]);
-            if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
+            if (!savingCustomName)
             {
-                if (!savePattern)
-                    ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
-                else
+                if (AreaSelecter.GetInstance().screenCorner1 != Vector3.zero)
                 {
-                    SavePattern(AreaSelecter.GetInstance().GetAreaCorners());
-                    savePattern = true;
+                    Vector2 corn1 = AreaSelecter.GetInstance().screenCorner1;
+                    Vector2 corn2 = AreaSelecter.GetInstance().screenCorner2;
+                    Debug.Log(corn1 + " " + corn2);
+                    //Drawing.DrawRect(new Rect(corn1, corn2), Color.blue);
+                    float x1 = corn1.x < corn2.x ? corn1.x : corn2.x;
+                    float x2 = corn1.x > corn2.x ? corn1.x : corn2.x;
+                    float y1 = corn1.y < corn2.y ? corn1.y : corn2.y;
+                    float y2 = corn1.y > corn2.y ? corn1.y : corn2.y;
+                    y2 = Screen.height - y2;
+                    y1 = Screen.height - y1;
+                    Debug.Log(x1 + " " + x2 + " " + y1 + " " + y2);
+                    GUI.Box(new Rect(x1,y2,x2-x1,y1-y2), "");
                 }
-                AreaSelecter.GetInstance().Reset();
-                paused = selectArea = false;
-                savePattern = false;
-                gamefield.mouseRestr = false;
-                ChangeStateOutlines();
-                gpan = true;
+                GUI.Box(new Rect(tickR.x - blackind, 0, tickR.width * 2 + blackind * 3, rGpanH + blackind), "", MainSkin.customStyles[0]);
+                if (GUI.Button(tickR, tickC, MainSkin.customStyles[1]))
+                {
+                    if (!savePattern)
+                    {
+                        ChangeArea(AreaSelecter.GetInstance().GetAreaGO());
+                        paused = selectArea = false;
+                        gpan = true;
+                        gamefield.mouseRestr = false;
+                    }
+                    else
+                    {
+                        SavePattern(AreaSelecter.GetInstance().GetAreaCorners());
+                        savingCustomName = true;
+                    }
+                    AreaSelecter.GetInstance().Reset();
+                }
+                if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
+                {
+                    AreaSelecter.GetInstance().Reset();
+                    gamefield.mouseRestr = false;
+                    paused = selectArea = false;
+                    savePattern = false;
+                    gpan = true;
+                }
             }
-            if (GUI.Button(crossR, crossC, MainSkin.customStyles[1]))
+            if (savingCustomName)
             {
-                AreaSelecter.GetInstance().Reset();
-                gamefield.mouseRestr = false;
-                paused = selectArea = false;
-                savePattern = false;
-                gpan = true;
+                GUI.Box(patSaveNameBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(patSaveNameConfBoxR, "", MainSkin.customStyles[0]);
+
+                custName = GUI.TextField(patSaveNameR, custName, MainSkin.textField);
+                if (GUI.Button(patSaveNameConfR, tickC, MainSkin.customStyles[1]))
+                {
+                    //FIXME
+                    UnpauseFuckedWay();
+                    PlayerPrefs.SetString(customPatsBaseKey + "_name_" + (customPatCount - 1),custName);
+                    custPat[custPat.Count - 1].name = custName;
+                    savePattern = paused = selectArea = savingCustomName = false;
+                    gpan = true;
+                    gamefield.mouseRestr = false;
+                }
             }
         }
 
@@ -770,7 +888,7 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = !customPlaceMenu;
                 customPlaceMenu = !customPlaceMenu;
                 placeMenu = placePatTMenu = toolsMenu = drawMenu = false;
-                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth, Screen.height - rCustomPlaceBoxH - blackind);
+                scrollViewPos = new Rect(customR.x - blackind, rGpanH + blackind, rCustomPlaceBoxW + scrollerWidth + deletePatR.width + 1, Screen.height - rCustomPlaceBoxH - blackind);
             }
             if (GUI.Button(toolsR,toolsC, MainSkin.customStyles[1]))
             {
@@ -789,31 +907,19 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (pauseMenu)
         {
-            if (!slmenu && !optionsmenu)
+            if (!slmenu && !recreateMenu)
             {
                 GUI.Box(pauseMenuR, "", MainSkin.customStyles[0]);
                 if (GUI.Button(continueR, continueC, MainSkin.customStyles[1]))
                 {
                     //FIXME
-                    //УЖАСНЫЙ КОСТЫЛЬ!
-                    pressedGo = gamefield.GetPressedGO();
-                    if (pressedGo != null)
-                    {
-                        int pgoX, pgoZ;
-                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                        gamefield.FlipCell(pgoX, pgoZ);
-                    }
-                    //конец костыля
+                    UnpauseFuckedWay();
                     gamefield.scrRestraints.Clear();
                     paused = pauseMenu = false;
                 }
-
-                //TODO
-                if (GUI.Button(optionsR, optionsC, MainSkin.customStyles[1]))
+                if (GUI.Button(recreateFieldR, recreateFieldC, MainSkin.customStyles[1]))
                 {
-                    gamefield.scrRestraints.Clear();
-                    paused = pauseMenu = false;
+                    recreateMenu = true;
                 }
 
                 if (GUI.Button(saveR, saveC, MainSkin.customStyles[1]))
@@ -879,9 +985,56 @@ public class GameManagerClassic : MonoBehaviour {
                 }
 
             }
-            if (optionsmenu)
+            if (recreateMenu)
             {
-
+                GUI.Box(fieldMenuBoxR, " ", MainSkin.customStyles[0]);
+                if (!typeSelector)
+                {
+                    xInput.TextField(ref xNewLeng, MainSkin.textField);
+                    zInput.TextField(ref zNewLeng, MainSkin.textField);
+                }
+                else
+                {
+                    GUI.Box(fieldXInR, xInput.GetCont(), MainSkin.textField);
+                    GUI.Box(fieldZInR, zInput.GetCont(), MainSkin.textField);
+                }
+                if (GUI.Button(fieldTypeSelectR, typeSelecterC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = true;
+                }
+                if (GUI.Button(fieldConfirmR, confirmC, MainSkin.customStyles[1]))
+                {
+                    Restart(typeSelecterC.text);
+                    recreateMenu = false;
+                    ShowAd();
+                }
+                if (GUI.Button(fieldBackR, backC, MainSkin.customStyles[1]))
+                {
+                    typeSelector = false;
+                    typeSelecterC.text = typeSelectT;
+                    recreateMenu = false;
+                    xInput.Reset();
+                    zInput.Reset();
+                }
+                if (typeSelector)
+                {
+                    GUI.Box(typeSelecterBoxR, " ", MainSkin.customStyles[0]);
+                    if (GUI.Button(typeSelectEmptR, "Empty", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: empty";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectBlackR, "Black", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: black";
+                        typeSelector = false;
+                    }
+                    if (GUI.Button(typeSelectRandR, "Random", MainSkin.customStyles[1]))
+                    {
+                        typeSelecterC.text = "Type: random";
+                        typeSelector = false;
+                    }
+                }
             }
         }
         if (placeMenu)
@@ -929,18 +1082,57 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (customPlaceMenu)
         {
-            scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW, custPat.Count * rCustomPlaceBoxH));
-            for (int i = 0; i < custPat.Count; i++)
-                if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+            if (!deletingCustomPat)
+            {
+                scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rCustomPlaceBoxW + deletePatR.width, custPat.Count * rCustomPlaceBoxH));
+                int i = 0;
+                for (int j = 0; j < MAX_CUSTOMS; j++)
+                    if (customPatsNums[j])
+                    {
+                        if (GUI.Button(new Rect(0, rCustomPlaceBoxH * i, rCustomPlaceBoxW, rCustomPlaceBoxH), custPat[i].name))
+                        {
+                            customPlaceMenu = false;
+                            paused = true;
+                            placing = true;
+                            gpan = false;
+                            InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
+                            break;
+                        }
+                        if (GUI.Button(new Rect(rCustomPlaceBoxW + 1, rCustomPlaceBoxH * i + 1, deletePatR.width, deletePatR.height), crossC, MainSkin.customStyles[4]))
+                        {
+                            numDeleteArr = j;
+                            numDeletePat = i;
+                            deletingCustomPat = true;
+                            break;
+                        }
+                        i++;
+                    }
+                GUI.EndScrollView();
+            }
+            else
+            {
+                GUI.Box(deletePatConfBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(deletePatConfR, deletePatConfC.text + "'" + /*possible bug creator*/custPat[numDeletePat].name + "'" + "?" , MainSkin.customStyles[1]);
+                GUI.Box(deletePatTickBoxR, "", MainSkin.customStyles[0]);
+                GUI.Box(deletePatCrossBoxR, "", MainSkin.customStyles[0]);
+                if (GUI.Button(deletePatTickR, tickC, MainSkin.customStyles[1]))
                 {
+                    //FIXME
+                    UnpauseFuckedWay();
+                    DeleteCustomPattern(numDeleteArr, numDeletePat);
                     customPlaceMenu = false;
-                    paused = true;
-                    placing = true;
-                    gpan = false;
-                    InstPatt.GetInstance().Place(custPat[i], this.transform.position, 0);
-                    break;
+                    paused = false;
+                    deletingCustomPat = false;
                 }
-            GUI.EndScrollView();
+                if (GUI.Button(deletePatCrossR, crossC, MainSkin.customStyles[1]))
+                {
+                    //FIXME
+                    UnpauseFuckedWay();
+                    customPlaceMenu = false;
+                    paused = false;
+                    deletingCustomPat = false;
+                }
+            }
         }
         if (toolsMenu)
         {
@@ -952,7 +1144,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = FillWhite;
             }
             if (GUI.Button(fillBlackR,fillBlackC, MainSkin.customStyles[1]))
@@ -962,7 +1153,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = FillBlack;
             }
             if (GUI.Button(invertR,invertC, MainSkin.customStyles[1]))
@@ -972,7 +1162,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 ChangeArea = Invert;
             }
             if (GUI.Button(savePattR,savePattC, MainSkin.customStyles[1]))
@@ -982,7 +1171,6 @@ public class GameManagerClassic : MonoBehaviour {
                 paused = true;
                 toolsMenu = false;
                 selectArea = true;
-                ChangeStateOutlines();
                 savePattern = true;
             }
         }
@@ -1013,25 +1201,17 @@ public class GameManagerClassic : MonoBehaviour {
         }
         if (drawing)
         {
+            GUI.Box(endDrawBoxR, "", MainSkin.customStyles[0]);
             if (GUI.Button(endDrawR,crossC, MainSkin.customStyles[1]))
             {
                 gpan = true;
                 drawing = false;
                 paused = false;
-                //FIXME
-                //УЖАСНЫЙ КОСТЫЛЬ!
                 if (drawType == DrawType.black)
                 {
-                    pressedGo = gamefield.GetPressedGO();
-                    if (pressedGo != null && pressedGo.tag == "Cell")
-                    {
-                        int pgoX, pgoZ;
-                        pgoX = Mathf.RoundToInt(pressedGo.transform.position.x);
-                        pgoZ = Mathf.RoundToInt(pressedGo.transform.position.z);
-                        gamefield.FlipCell(pgoX, pgoZ);
-                    }
+                    //FIXME
+                    UnpauseFuckedWay();
                 }
-                //конец костыля
             }
         }
     }
@@ -1059,6 +1239,7 @@ public class GameManagerClassic : MonoBehaviour {
         Debug.Log("Filled white");
     }
 
+    void SaveCustomPatternNums () { PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_nums", customPatsNums); }
     void SavePattern(Structers.Pair<Structers.Pair<int,int>, Structers.Pair<int, int>> coord)
     {
         //string path = "Assets/Texts/customPatterns.txt";
@@ -1083,6 +1264,8 @@ public class GameManagerClassic : MonoBehaviour {
         //writer.Close(); 
         Pattern custom = new Pattern();
         string name = "custom " + customPatCount;
+        customPatsNums[customPatCount] = true;
+        SaveCustomPatternNums();
         custom.name = name;
         custom.def = pat;
         custPat.Add(custom);
@@ -1095,5 +1278,53 @@ public class GameManagerClassic : MonoBehaviour {
             PlayerPrefsX.SetBoolArray(customPatsBaseKey + "_" + name + customPatsLanePfx + i, arr[i].ToArray());
         Debug.Log("saved");
         savePattern = false;
+    }
+
+    void DeleteCustomPattern(int numArr, int numPat)
+    {
+        Debug.Log("Deleting at " + numPat);
+        custPat.RemoveAt(numPat);
+        string name = "custom " + numArr;
+        PlayerPrefs.DeleteKey(customPatsBaseKey + "_" + name);
+        //TODO
+        //possible memory leak
+        /*for (int i = 0; i < custPat[numPat].def.Count; i++)
+            PlayerPrefs.DeleteKey(customPatsBaseKey + "_" + name + customPatsLanePfx + i);*/
+        customPatsNums[numArr] = false;
+        SaveCustomPatternNums();
+    }
+
+    void Restart(string fType)
+    {
+        gamefield.DestroyField();
+        gamefield.Initialize(xNewLeng, zNewLeng);
+        switch (fType)
+        {
+            case typeWhite:
+                gamefield.CreateEmptyField(false);
+                break;
+            case typeBlack:
+                gamefield.CreateEmptyField(true);
+                break;
+            case typeRandom:
+                gamefield.CreateRandomField();
+                break;
+            default:
+                gamefield.CreateEmptyField(false);
+                break;
+        }
+        var pos = this.transform.position;
+        pos.x = xNewLeng / 2;
+        pos.z = zNewLeng / 2;
+        this.transform.position = pos;
+    }
+
+    public void ShowAd()
+    {
+        if (Advertisement.IsReady())
+        {
+            Debug.Log("ad");
+            Advertisement.Show();
+        }
     }
 }

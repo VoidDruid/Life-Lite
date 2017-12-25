@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Advertisements;
 using System.Collections;
 using System.Linq;
 
@@ -16,8 +17,14 @@ public class MenuScript : MonoBehaviour {
 	private GameObject GameCamera;
     FieldScript menufield;
 
+    void Awake()
+    {
+        Advertisement.Initialize("1578434", true);
+    }
+
 	// Use this for initialization
 	void Start () {
+        
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         Debug.Log("MENU START");
         menufield = this.GetComponent<FieldScript>();
@@ -28,10 +35,21 @@ public class MenuScript : MonoBehaviour {
 		InGame = false;
 		rBoxS = Screen.width * BoxS;
 		rIndent = Screen.width * Indent;
-		rExitS = Screen.width * ExitS;
+		//rExitS = Screen.width * ExitS;
         this.transform.position = new Vector3(xleng / 2, 7, 3);
         GUICalc();
+
+        ShowAd();
 	}
+
+    public void ShowAd()
+    {
+        if (Advertisement.IsReady())
+        {
+            Debug.Log("ad");
+            Advertisement.Show();
+        }
+    }
 
     public int blackind = 1;
     public float fieldSettingsW;
@@ -66,6 +84,7 @@ public class MenuScript : MonoBehaviour {
         typeSelecterBoxR = new Rect(typeSelectEmptR.x - blackind, fieldTypeSelectR.y - blackind, typeSelectEmptR.width + 2 * blackind, typeSelectEmptR.height * 3 + blackind * 4);
         xInput = new IntInputString(20, 60, 300, fieldXInR);
         zInput = new IntInputString(20, 60, 300, fieldZInR);
+        MainSkin.customStyles[2].fontSize = Mathf.RoundToInt(rBoxS / 8);
     }
     
     void Continue()
@@ -87,7 +106,7 @@ public class MenuScript : MonoBehaviour {
         Quaternion camrot = Quaternion.identity;
 		camrot.eulerAngles = StartCameraRot;
 		GameCamera = Instantiate (GameCameraPref, new Vector3 (0,0,0), camrot) as GameObject;
-        GameCamera.GetComponent<GameManagerClassic>().xleng =xleng;
+        GameCamera.GetComponent<GameManagerClassic>().xleng = xleng;
         GameCamera.GetComponent<GameManagerClassic>().zleng = zleng;
         switch (fType)
         {

@@ -351,6 +351,8 @@ public class FieldScript : MonoBehaviour
     public Camera cam;
     bool getoffset = false, mousemoved = false;
     public bool mouseRestr = false;
+    public float zoomSpeed = 0.2f;
+    public float minHeight, maxHeight;
     public void PCalculations()
     {
         foreach (var r in scrRestraints)
@@ -360,9 +362,32 @@ public class FieldScript : MonoBehaviour
                 mouseRestr = true;
                 break;
             }
-        }      
-        //TODO
-        if (true /*!turning && !wassaving && !wasloading*/)
+        }
+
+        if (Input.touchCount == 2 && !mainMenu)
+        {
+            // Store both touches.
+            Touch touchZero = Input.GetTouch(0);
+            Touch touchOne = Input.GetTouch(1);
+
+            // Find the position in the previous frame of each touch.
+            Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+            Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+
+            // Find the magnitude of the vector (the distance) between the touches in each frame.
+            float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+            float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+
+            // Find the difference in the distances between each frame.
+            float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+
+            // Zoom
+            this.transform.Translate(0, 0, -deltaMagnitudeDiff * zoomSpeed);
+            if (this.transform.position.y < minHeight) this.transform.position = new Vector3(this.transform.position.x, minHeight, this.transform.position.z);
+            if (this.transform.position.y > maxHeight) this.transform.position = new Vector3(this.transform.position.x, maxHeight, this.transform.position.z);
+
+        }
+        if (Input.touchCount == 1) /*!turning && !wassaving && !wasloading*/
         {
             if (Input.GetMouseButtonDown(0) && !mainMenu && !drawing)
             {
