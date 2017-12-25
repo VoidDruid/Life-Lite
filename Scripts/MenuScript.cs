@@ -155,11 +155,11 @@ public class MenuScript : MonoBehaviour {
             if (generalMenu)
             {
                 //DEBUG START
-                if (GUI.Button(new Rect(0, 0, 50, 50), " Clear prefs"))
+                /*if (GUI.Button(new Rect(0, 0, 50, 50), " Clear prefs"))
                 {
                     PlayerPrefs.DeleteAll();
                     Debug.Log("cleared player prefs");
-                }
+                }*/
                 //DEBUG END
 
                 if (GUI.Button(new Rect((Screen.width - rBoxS * 2 - rIndent) / 2, (Screen.height - rBoxS) / 2, rBoxS, rBoxS), Playc, MainSkin.customStyles[2]))
