@@ -1313,6 +1313,10 @@ public class GameManagerClassic : MonoBehaviour {
                 gamefield.CreateEmptyField(false);
                 break;
         }
+        var pos = this.transform.position;
+        pos.x = xNewLeng / 2;
+        pos.z = zNewLeng / 2;
+        this.transform.position = pos;
     }
 
     public void ShowAd()
