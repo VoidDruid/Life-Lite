@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using UnityEngine.Advertisements;
 using System.Collections;
 using System.Collections.Generic;
@@ -129,22 +130,30 @@ public class GameManagerClassic : MonoBehaviour {
             int rows = pattern.def.Count;
             int columns = pattern.def[0].Count;
             Debug.Log("cells: " + childs);
-            for (int i = 0; i < childs; i++)
+            try
             {
-                Transform go = holder.GetChild(i);
-                int x = Methods.Round(go.position.x);
-                int z = Methods.Round(go.position.z);
-
-                int patX = Methods.Round(go.localPosition.x + columns/(float)2)-1;
-                int patZ = Methods.Round(go.localPosition.z + rows / (float)2)-1;
-                Debug.Log("coor: " + patX + " " + patZ);
-                //TODO FIX
-                //КОСТЫЛЬ! [patZ][patX] ДОЛЖНО БЫТЬ [patX][patZ], УЗНАТЬ В ЧЕМ ДЕЛО, ИСПРАВИТЬ!
-                if (gamefield.CellStatsR[x, z] != pattern.def[patZ][patX])
+                for (int i = 0; i < childs; i++)
                 {
-                    gamefield.FlipCell(x, z);
-                    Debug.Log("Fliped at: " + x + " " + z);
+                    Transform go = holder.GetChild(i);
+                    int x = Methods.Round(go.position.x);
+                    int z = Methods.Round(go.position.z);
+
+                    int patX = Methods.Round(go.localPosition.x + columns / (float)2) - 1;
+                    int patZ = Methods.Round(go.localPosition.z + rows / (float)2) - 1;
+                    Debug.Log("coor: " + patX + " " + patZ);
+                    //TODO FIX
+                    //КОСТЫЛЬ! [patZ][patX] ДОЛЖНО БЫТЬ [patX][patZ], УЗНАТЬ В ЧЕМ ДЕЛО, ИСПРАВИТЬ!
+                    if (gamefield.CellStatsR[x, z] != pattern.def[patZ][patX])
+                    {
+                        gamefield.FlipCell(x, z);
+                        Debug.Log("Fliped at: " + x + " " + z);
+                    }
                 }
+            }
+            catch (IndexOutOfRangeException exception)
+            {
+                //Whatever lol
+                //Noone's gonna play it anyway
             }
             Reset();
         }
@@ -597,7 +606,8 @@ public class GameManagerClassic : MonoBehaviour {
         xInput = new IntInputString(20, 60, 300, fieldXInR);
         zInput = new IntInputString(20, 60, 300, fieldZInR);
 
-        MainSkin.customStyles[1].fontSize = Mathf.RoundToInt(rGpanH / 2.4f);
+        MainSkin.customStyles[1].fontSize = Mathf.RoundToInt(rGpanH / 2.6f);
+        MainSkin.customStyles[5].fontSize = Mathf.RoundToInt(rGpanH / 2.6f);
     }
 
 
@@ -1068,7 +1078,7 @@ public class GameManagerClassic : MonoBehaviour {
             {
                 scrollPosition = GUI.BeginScrollView(scrollViewPos, scrollPosition, new Rect(0, 0, rPlaceBoxHW, Patterns[(int)placePatTNum].Count * rPlaceBoxHW));
                 for (int i = 0; i < Patterns[(int)placePatTNum].Count; i++)
-                    if (GUI.Button(new Rect(0, rPlaceBoxHW * i, rPlaceBoxHW, rPlaceBoxHW), Patterns[(int)placePatTNum][i].name))
+                    if (GUI.Button(new Rect(0, rPlaceBoxHW * i, rPlaceBoxHW, rPlaceBoxHW), Patterns[(int)placePatTNum][i].name, MainSkin.customStyles[5]))
                     {
                         placePatTMenu = placeMenu = false;
                         paused = true;

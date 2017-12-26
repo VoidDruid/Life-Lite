@@ -35,7 +35,7 @@ public class MenuScript : MonoBehaviour {
 		InGame = false;
 		rBoxS = Screen.width * BoxS;
 		rIndent = Screen.width * Indent;
-		//rExitS = Screen.width * ExitS;
+		rExitS = Screen.width * ExitS;
         this.transform.position = new Vector3(xleng / 2, 7, 3);
         GUICalc();
 
@@ -172,7 +172,7 @@ public class MenuScript : MonoBehaviour {
                     generalMenu = false;
                     fieldMenu = true;
                 }
-                if (GUI.Button(new Rect(Screen.width - rExitS, Screen.height - rExitS, rExitS, rExitS), Exitc, MainSkin.customStyles[2]))
+                if (GUI.Button(new Rect(Screen.width - rExitS, 0, rExitS, rExitS), Exitc, MainSkin.customStyles[2]))
                 {
                     Exiting = true;
                     generalMenu = false;
